@@ -1,29 +1,72 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Settings, Save, CheckCircle } from 'lucide-react';
 import { HelmetSEO } from '@/components/seo/HelmetSEO';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { settingsService } from '@/services/SettingsService';
 
 const SettingsAdmin: React.FC = () => {
   // Global SEO Settings
-  const [siteTitle, setSiteTitle] = useState('Ali | CS Student & AI Builder');
-  const [siteDescription, setSiteDescription] = useState('Portfolio OS - Founder of Deep Code, building tools for educational systems.');
+  const [siteTitle, setSiteTitle] = useState('');
+  const [siteDescription, setSiteDescription] = useState('');
   
   // Socials
-  const [github, setGithub] = useState('https://github.com');
-  const [linkedin, setLinkedin] = useState('https://linkedin.com');
-  const [youtube, setYoutube] = useState('https://youtube.com');
+  const [github, setGithub] = useState('');
+  const [linkedin, setLinkedin] = useState('');
+  const [youtube, setYoutube] = useState('');
 
   // Brand details
-  const [logoText, setLogoText] = useState('ALI.OS');
+  const [logoText, setLogoText] = useState('');
   
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => {
+    const loadSettings = async () => {
+      setLoading(true);
+      try {
+        const logo = await settingsService.getSetting('logoText', 'ALI.OS');
+        const title = await settingsService.getSetting('siteTitle', 'Ali | CS Student & AI Builder');
+        const desc = await settingsService.getSetting('siteDescription', 'Portfolio OS - Founder of Deep Code...');
+        const git = await settingsService.getSetting('github', 'https://github.com');
+        const link = await settingsService.getSetting('linkedin', 'https://linkedin.com');
+        const yt = await settingsService.getSetting('youtube', 'https://youtube.com');
+
+        setLogoText(logo);
+        setSiteTitle(title);
+        setSiteDescription(desc);
+        setGithub(git);
+        setLinkedin(link);
+        setYoutube(yt);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 2000);
+    try {
+      await settingsService.setSetting('logoText', logoText);
+      await settingsService.setSetting('siteTitle', siteTitle);
+      await settingsService.setSetting('siteDescription', siteDescription);
+      await settingsService.setSetting('github', github);
+      await settingsService.setSetting('linkedin', linkedin);
+      await settingsService.setSetting('youtube', youtube);
+
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2000);
+    } catch (err) {
+      console.error(err);
+    }
   };
+
+  if (loading) {
+    return <div className="text-center py-12 font-mono text-xs text-muted">Loading settings parameters...</div>;
+  }
 
   return (
     <div className="space-y-8">
@@ -33,7 +76,7 @@ const SettingsAdmin: React.FC = () => {
       <div className="flex justify-between items-center border-b border-primary/10 pb-4">
         <div>
           <h2 className="text-2xl font-bold text-text flex items-center gap-2">
-            <Settings className="h-6 w-6 text-accent animate-pulse" /> Platform Settings
+            <Settings className="h-6 w-6 text-accent" /> Platform Settings
           </h2>
           <p className="text-xs text-muted mt-0.5">Configure global default SEO metadata and brand social profiles links.</p>
         </div>

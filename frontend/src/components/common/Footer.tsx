@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { ArrowUp, Cpu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { settingsService } from '@/services/SettingsService';
 
 export const Footer: React.FC = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [logoText, setLogoText] = useState('ALI.OS');
 
   // Monitor scroll height to show Back-to-Top toggle
   useEffect(() => {
@@ -17,6 +19,16 @@ export const Footer: React.FC = () => {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        const text = await settingsService.getSetting('logoText', 'ALI.OS');
+        setLogoText(text);
+      } catch {}
+    };
+    fetchLogo();
   }, []);
 
   const handleScrollToTop = () => {
@@ -33,7 +45,7 @@ export const Footer: React.FC = () => {
           <div className="md:col-span-4 space-y-4">
             <NavLink to="/" className="flex items-center gap-2 font-mono text-lg font-bold tracking-wider text-accent hover:text-highlight w-fit">
               <Cpu className="h-5 w-5 text-accent animate-pulse" />
-              <span>ALI.OS</span>
+              <span>{logoText}</span>
             </NavLink>
             <p className="text-xs sm:text-sm text-muted leading-relaxed max-w-xs">
               A scalable developer ecosystem showcasing personal software products, university communities, notes libraries, and open-source contributions.

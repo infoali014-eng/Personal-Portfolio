@@ -170,3 +170,14 @@ CREATE TABLE analytics_events (
 ALTER TABLE analytics_events ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public insert events" ON analytics_events FOR INSERT TO public WITH CHECK (true);
 CREATE POLICY "Allow admin manage events" ON analytics_events FOR ALL TO authenticated USING (true);
+
+-- 12. Settings Schema
+CREATE TABLE settings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  key VARCHAR(255) UNIQUE NOT NULL,
+  value TEXT NOT NULL
+);
+
+ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read settings" ON settings FOR SELECT TO public USING (true);
+CREATE POLICY "Allow admin manage settings" ON settings FOR ALL TO authenticated USING (true);

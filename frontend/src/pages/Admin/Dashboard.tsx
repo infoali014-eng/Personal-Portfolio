@@ -9,7 +9,9 @@ import {
   Image, 
   Plus, 
   Clock, 
-  TrendingUp 
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle2
 } from 'lucide-react';
 import { HelmetSEO } from '@/components/seo/HelmetSEO';
 import { Card } from '@/components/ui/Card';
@@ -18,33 +20,43 @@ import { ProjectsService } from '@/services/ProjectsService';
 import { SolutionsService } from '@/services/SolutionsService';
 import { NotesService } from '@/services/NotesService';
 import { BlogService } from '@/services/BlogService';
+import { APP_CONFIG } from '@/core/config';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
-  const [projectCount, setProjectCount] = useState(4);
-  const [solutionsCount, setSolutionsCount] = useState(2);
-  const [notesCount, setNotesCount] = useState(4);
-  const [blogCount, setBlogCount] = useState(1);
+  const [projectCount, setProjectCount] = useState(0);
+  const [solutionsCount, setSolutionsCount] = useState(0);
+  const [notesCount, setNotesCount] = useState(0);
+  const [blogCount, setBlogCount] = useState(0);
+  
+  const [dbStatus, setDbStatus] = useState<'checking' | 'healthy' | 'error'>('checking');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const backendMode = APP_CONFIG.app.backendMode;
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        setDbStatus('checking');
         const projects = await new ProjectsService().getProjects();
         setProjectCount(projects.length);
-      } catch {}
-      try {
+
         const solutions = await new SolutionsService().getSolutions();
         setSolutionsCount(solutions.length);
-      } catch {}
-      try {
+
         const notes = await new NotesService().getNotes();
         setNotesCount(notes.length);
-      } catch {}
-      try {
+
         const blogs = await new BlogService().getArticles();
         setBlogCount(blogs.length);
-      } catch {}
+
+        setDbStatus('healthy');
+      } catch (err: any) {
+        console.error('Database query error:', err);
+        setDbStatus('error');
+        setErrorMessage(err.message || 'Unknown database query failure');
+      }
     };
     fetchStats();
   }, []);
@@ -85,6 +97,52 @@ const Dashboard: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      {/* Database connection banner */}
+      <Card className={`p-4 border text-xs font-mono flex items-start gap-3 rounded-2xl ${
+        backendMode === 'supabase'
+          ? dbStatus === 'healthy'
+            ? 'bg-success/5 border-success/20 text-success'
+            : dbStatus === 'checking'
+              ? 'bg-primary/5 border-primary/10 text-muted'
+              : 'bg-rose-500/5 border-rose-500/20 text-rose-500'
+          : 'bg-amber-500/5 border-amber-500/25 text-amber-500'
+      }`}>
+        {backendMode === 'supabase' ? (
+          dbStatus === 'healthy' ? (
+            <>
+              <CheckCircle2 className="h-5 w-5 shrink-0" />
+              <div className="space-y-1">
+                <p className="font-bold">SUPABASE BACKEND ACTIVE & HEALTHY</p>
+                <p className="opacity-80">Connection established successfully. Database CRUD operations will persist changes permanently.</p>
+              </div>
+            </>
+          ) : dbStatus === 'checking' ? (
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-accent animate-ping" />
+              <span>Verifying Supabase connection parameters...</span>
+            </div>
+          ) : (
+            <>
+              <AlertTriangle className="h-5 w-5 shrink-0" />
+              <div className="space-y-1">
+                <p className="font-bold">SUPABASE CONNECTION ERROR</p>
+                <p className="opacity-80">Failed to query tables. Make sure you have created the tables in your Supabase SQL editor using <code className="bg-rose-500/10 px-1 py-0.5 rounded">schema.sql</code>.</p>
+                <p className="font-bold mt-1 text-xs">Error details: {errorMessage}</p>
+              </div>
+            </>
+          )
+        ) : (
+          <>
+            <AlertTriangle className="h-5 w-5 shrink-0" />
+            <div className="space-y-1">
+              <p className="font-bold">RUNNING IN MOCK MODE (LOCAL MEMORY)</p>
+              <p className="opacity-80">The system is utilizing local mock data arrays because VITE_BACKEND_MODE is not set to "supabase". Changes made here will reset upon browser refresh.</p>
+              <p className="opacity-80 mt-1">To connect to Supabase: Ensure VITE_BACKEND_MODE="supabase", VITE_SUPABASE_URL, and VITE_SUPABASE_ANON_KEY environment variables are deployed on Vercel.</p>
+            </div>
+          </>
+        )}
+      </Card>
 
       {/* Stats Cards grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -140,7 +198,9 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="flex justify-between items-center text-xs font-mono">
               <span className="text-muted">Database Engine</span>
-              <span className="text-success flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-success" /> Active</span>
+              <span className={backendMode === 'supabase' && dbStatus === 'healthy' ? 'text-success font-bold' : 'text-amber-500 font-bold'}>
+                {backendMode === 'supabase' ? 'Supabase DB' : 'Mock Memory'}
+              </span>
             </div>
             <div className="flex justify-between items-center text-xs font-mono">
               <span className="text-muted">Version History</span>

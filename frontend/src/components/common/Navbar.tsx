@@ -1,15 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Sun, Moon, Cpu, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NAV_ITEMS } from '@/constants/navigation';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
+import { settingsService } from '@/services/SettingsService';
 
 export const Navbar: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [logoText, setLogoText] = useState('ALI.OS');
+
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        const text = await settingsService.getSetting('logoText', 'ALI.OS');
+        setLogoText(text);
+      } catch {}
+    };
+    fetchLogo();
+  }, []);
 
   return (
     <nav className="sticky top-0 z-40 w-full border-b border-primary/10 bg-surface/80 backdrop-blur-md transition-colors duration-300">
@@ -19,7 +31,7 @@ export const Navbar: React.FC = () => {
           <div className="flex flex-shrink-0 items-center gap-2">
             <NavLink to="/" className="flex items-center gap-2 font-mono text-lg font-bold tracking-wider text-accent hover:text-highlight">
               <Cpu className="h-5 w-5 text-accent animate-pulse" />
-              <span>ALI.OS</span>
+              <span>{logoText}</span>
             </NavLink>
           </div>
 
