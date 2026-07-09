@@ -1,6 +1,7 @@
 import { ProjectsRepository } from '@/repositories/ProjectsRepository';
 import { SupabaseProjectsRepository } from '@/repositories/supabase/SupabaseProjectsRepository';
 import { ProjectSchema } from '@/core/validation';
+import { PROJECTS_REGISTRY } from '@/data/projects';
 import type { ProjectData } from '@/data/projects';
 import { AppError } from '@/core/errors';
 import { APP_CONFIG } from '@/core/config';
@@ -12,21 +13,37 @@ export class ProjectsService {
 
   async getProjects(filterCategory?: string): Promise<ProjectData[]> {
     try {
-      const all = await this.repo.findAll();
+      const dbAll = await this.repo.findAll();
+      const mockAll = Object.values(PROJECTS_REGISTRY);
+      
+      // Merge database records with mock registry records (preventing duplicates)
+      const merged = APP_CONFIG.app.backendMode === 'supabase'
+        ? [...dbAll, ...mockAll.filter(m => !dbAll.some(d => d.slug === m.slug))]
+        : dbAll;
+
       if (filterCategory && filterCategory !== 'All') {
-        return all.filter(p => p.category.toLowerCase().includes(filterCategory.toLowerCase()));
+        return merged.filter(p => p.category.toLowerCase().includes(filterCategory.toLowerCase()));
       }
-      return all;
+      return merged;
     } catch (err: any) {
-      throw new AppError(err.message || 'Failed to fetch projects', 'REPOSITORY_ERROR');
+      console.error('Error fetching projects from database, falling back to mock:', err);
+      // Fail-safe fallback to mock registry
+      const mockAll = Object.values(PROJECTS_REGISTRY);
+      if (filterCategory && filterCategory !== 'All') {
+        return mockAll.filter(p => p.category.toLowerCase().includes(filterCategory.toLowerCase()));
+      }
+      return mockAll;
     }
   }
 
   async getProject(slug: string): Promise<ProjectData | null> {
     try {
-      return await this.repo.find(slug);
+      const dbItem = await this.repo.find(slug);
+      if (dbItem) return dbItem;
+      return PROJECTS_REGISTRY[slug] || null;
     } catch (err: any) {
-      throw new AppError(err.message || 'Failed to fetch project', 'REPOSITORY_ERROR');
+      console.warn(`Error querying database for project ${slug}, falling back to mock:`, err);
+      return PROJECTS_REGISTRY[slug] || null;
     }
   }
 

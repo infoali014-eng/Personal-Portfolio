@@ -4,34 +4,64 @@ import type { BaseRepository } from '../BaseRepository';
 import { AppError } from '@/core/errors';
 
 export class SupabaseNotesRepository implements BaseRepository<NoteData> {
+  private async getOrCreateCategoryId(name: string): Promise<string | null> {
+    if (!name) return null;
+    try {
+      const { data: existing } = await (supabase as any)
+        .from('categories')
+        .select('id')
+        .eq('name', name)
+        .eq('type', 'note')
+        .maybeSingle();
+
+      if (existing) {
+        return existing.id;
+      }
+
+      const { data: newCat, error } = await (supabase as any)
+        .from('categories')
+        .insert({ name, type: 'note' })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+      return newCat.id;
+    } catch (err) {
+      console.error('Error resolving category for note:', err);
+      return null;
+    }
+  }
+
   async find(slug: string): Promise<NoteData | null> {
     const { data, error } = await (supabase as any)
       .from('notes')
-      .select('*')
+      .select('*, categories(name)')
       .eq('slug', slug)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      if (error.code === 'PGRST116') return null;
       throw new AppError(error.message, 'NETWORK_ERROR');
     }
 
+    if (!data) return null;
     return this.mapToDomain(data);
   }
 
   async findAll(): Promise<NoteData[]> {
     const { data, error } = await (supabase as any)
       .from('notes')
-      .select('*');
+      .select('*, categories(name)');
 
     if (error) {
       throw new AppError(error.message, 'NETWORK_ERROR');
     }
 
-    return (data || []).map(this.mapToDomain);
+    return (data || []).map((row: any) => this.mapToDomain(row));
   }
 
   async create(item: NoteData): Promise<NoteData> {
+    const categoryId = await this.getOrCreateCategoryId(item.category);
+
     const { data, error } = await (supabase as any)
       .from('notes')
       .insert({
@@ -42,9 +72,10 @@ export class SupabaseNotesRepository implements BaseRepository<NoteData> {
         file_type: item.fileType,
         reading_time: item.readingTime,
         youtube_url: item.youtubeUrl,
-        youtube_title: item.youtubeTitle
+        youtube_title: item.youtubeTitle,
+        category_id: categoryId
       })
-      .select()
+      .select('*, categories(name)')
       .single();
 
     if (error) {
@@ -55,19 +86,30 @@ export class SupabaseNotesRepository implements BaseRepository<NoteData> {
   }
 
   async update(slug: string, item: Partial<NoteData>): Promise<NoteData> {
+    let categoryId = undefined;
+    if (item.category) {
+      categoryId = await this.getOrCreateCategoryId(item.category);
+    }
+
+    const updatePayload: any = {
+      title: item.title,
+      description: item.description,
+      difficulty: item.difficulty,
+      file_type: item.fileType,
+      reading_time: item.readingTime,
+      youtube_url: item.youtubeUrl,
+      youtube_title: item.youtubeTitle
+    };
+
+    if (categoryId !== undefined) {
+      updatePayload.category_id = categoryId;
+    }
+
     const { data, error } = await (supabase as any)
       .from('notes')
-      .update({
-        title: item.title,
-        description: item.description,
-        difficulty: item.difficulty,
-        file_type: item.fileType,
-        reading_time: item.readingTime,
-        youtube_url: item.youtubeUrl,
-        youtube_title: item.youtubeTitle
-      })
+      .update(updatePayload)
       .eq('slug', slug)
-      .select()
+      .select('*, categories(name)')
       .single();
 
     if (error) {
@@ -94,13 +136,13 @@ export class SupabaseNotesRepository implements BaseRepository<NoteData> {
     return {
       slug: row.slug,
       title: row.title,
-      category: 'Supabase Category',
+      category: row.categories ? row.categories.name : 'Programming',
       description: row.description,
       difficulty: row.difficulty,
       fileType: row.file_type,
       readingTime: row.reading_time,
       downloadsCount: row.downloads_count,
-      lastUpdated: row.updated_at,
+      lastUpdated: row.updated_at ? row.updated_at.split('T')[0] : '',
       youtubeUrl: row.youtube_url || '',
       youtubeTitle: row.youtube_title || '',
       tags: []

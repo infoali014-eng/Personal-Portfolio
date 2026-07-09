@@ -1,6 +1,7 @@
 import { BlogRepository } from '@/repositories/BlogRepository';
 import { SupabaseBlogRepository } from '@/repositories/supabase/SupabaseBlogRepository';
 import { ArticleSchema } from '@/core/validation';
+import { BLOG_REGISTRY } from '@/data/blog';
 import type { BlogArticleData } from '@/data/blog';
 import { AppError } from '@/core/errors';
 import { APP_CONFIG } from '@/core/config';
@@ -12,17 +13,28 @@ export class BlogService {
 
   async getArticles(): Promise<BlogArticleData[]> {
     try {
-      return await this.repo.findAll();
+      const dbAll = await this.repo.findAll();
+      const mockAll = Object.values(BLOG_REGISTRY);
+
+      const merged = APP_CONFIG.app.backendMode === 'supabase'
+        ? [...dbAll, ...mockAll.filter(m => !dbAll.some(d => d.slug === m.slug))]
+        : dbAll;
+
+      return merged;
     } catch (err: any) {
-      throw new AppError(err.message || 'Failed to fetch articles', 'REPOSITORY_ERROR');
+      console.error('Error fetching articles from database, falling back to mock:', err);
+      return Object.values(BLOG_REGISTRY);
     }
   }
 
   async getArticle(slug: string): Promise<BlogArticleData | null> {
     try {
-      return await this.repo.find(slug);
+      const dbItem = await this.repo.find(slug);
+      if (dbItem) return dbItem;
+      return BLOG_REGISTRY[slug] || null;
     } catch (err: any) {
-      throw new AppError(err.message || 'Failed to fetch article', 'REPOSITORY_ERROR');
+      console.warn(`Error querying database for article ${slug}, falling back to mock:`, err);
+      return BLOG_REGISTRY[slug] || null;
     }
   }
 

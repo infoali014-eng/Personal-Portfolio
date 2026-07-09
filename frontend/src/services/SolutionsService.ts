@@ -1,6 +1,7 @@
 import { SolutionsRepository } from '@/repositories/SolutionsRepository';
 import { SupabaseSolutionsRepository } from '@/repositories/supabase/SupabaseSolutionsRepository';
 import { SolutionSchema } from '@/core/validation';
+import { SOLUTIONS_REGISTRY } from '@/data/solutions';
 import type { SolutionData } from '@/data/solutions';
 import { AppError } from '@/core/errors';
 import { APP_CONFIG } from '@/core/config';
@@ -12,24 +13,41 @@ export class SolutionsService {
 
   async getSolutions(searchQuery?: string): Promise<SolutionData[]> {
     try {
-      const all = await this.repo.findAll();
+      const dbAll = await this.repo.findAll();
+      const mockAll = Object.values(SOLUTIONS_REGISTRY);
+
+      const merged = APP_CONFIG.app.backendMode === 'supabase'
+        ? [...dbAll, ...mockAll.filter(m => !dbAll.some(d => d.slug === m.slug))]
+        : dbAll;
+
       if (searchQuery) {
-        return all.filter(s => 
+        return merged.filter(s => 
           s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           s.tagline.toLowerCase().includes(searchQuery.toLowerCase())
         );
       }
-      return all;
+      return merged;
     } catch (err: any) {
-      throw new AppError(err.message || 'Failed to fetch solutions', 'REPOSITORY_ERROR');
+      console.error('Error fetching solutions from database, falling back to mock:', err);
+      const mockAll = Object.values(SOLUTIONS_REGISTRY);
+      if (searchQuery) {
+        return mockAll.filter(s => 
+          s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          s.tagline.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+      return mockAll;
     }
   }
 
   async getSolution(slug: string): Promise<SolutionData | null> {
     try {
-      return await this.repo.find(slug);
+      const dbItem = await this.repo.find(slug);
+      if (dbItem) return dbItem;
+      return SOLUTIONS_REGISTRY[slug] || null;
     } catch (err: any) {
-      throw new AppError(err.message || 'Failed to fetch solution', 'REPOSITORY_ERROR');
+      console.warn(`Error querying database for solution ${slug}, falling back to mock:`, err);
+      return SOLUTIONS_REGISTRY[slug] || null;
     }
   }
 

@@ -1,6 +1,7 @@
 import { NotesRepository } from '@/repositories/NotesRepository';
 import { SupabaseNotesRepository } from '@/repositories/supabase/SupabaseNotesRepository';
 import { NoteSchema } from '@/core/validation';
+import { NOTES_REGISTRY } from '@/data/notes';
 import type { NoteData } from '@/data/notes';
 import { AppError } from '@/core/errors';
 import { APP_CONFIG } from '@/core/config';
@@ -12,24 +13,43 @@ export class NotesService {
 
   async getNotes(category?: string, difficulty?: string): Promise<NoteData[]> {
     try {
-      let all = await this.repo.findAll();
+      const dbAll = await this.repo.findAll();
+      const mockAll = Object.values(NOTES_REGISTRY);
+
+      const merged = APP_CONFIG.app.backendMode === 'supabase'
+        ? [...dbAll, ...mockAll.filter(m => !dbAll.some(d => d.slug === m.slug))]
+        : dbAll;
+
+      let filtered = merged;
       if (category && category !== 'All') {
-        all = all.filter(n => n.category.toLowerCase() === category.toLowerCase());
+        filtered = filtered.filter(n => n.category.toLowerCase() === category.toLowerCase());
       }
       if (difficulty && difficulty !== 'All') {
-        all = all.filter(n => n.difficulty.toLowerCase() === difficulty.toLowerCase());
+        filtered = filtered.filter(n => n.difficulty.toLowerCase() === difficulty.toLowerCase());
       }
-      return all;
+      return filtered;
     } catch (err: any) {
-      throw new AppError(err.message || 'Failed to fetch notes', 'REPOSITORY_ERROR');
+      console.error('Error fetching notes from database, falling back to mock:', err);
+      const mockAll = Object.values(NOTES_REGISTRY);
+      let filtered = mockAll;
+      if (category && category !== 'All') {
+        filtered = filtered.filter(n => n.category.toLowerCase() === category.toLowerCase());
+      }
+      if (difficulty && difficulty !== 'All') {
+        filtered = filtered.filter(n => n.difficulty.toLowerCase() === difficulty.toLowerCase());
+      }
+      return filtered;
     }
   }
 
   async getNote(slug: string): Promise<NoteData | null> {
     try {
-      return await this.repo.find(slug);
+      const dbItem = await this.repo.find(slug);
+      if (dbItem) return dbItem;
+      return NOTES_REGISTRY[slug] || null;
     } catch (err: any) {
-      throw new AppError(err.message || 'Failed to fetch note', 'REPOSITORY_ERROR');
+      console.warn(`Error querying database for note ${slug}, falling back to mock:`, err);
+      return NOTES_REGISTRY[slug] || null;
     }
   }
 
