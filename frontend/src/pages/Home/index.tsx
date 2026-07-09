@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useProjects } from '@/hooks/useProjects';
+import { useSolutions } from '@/hooks/useSolutions';
+import { useNotes } from '@/hooks/useNotes';
 import { 
   ArrowRight, 
   Download, 
@@ -351,6 +354,53 @@ const FAQS_DATA: FAQItem[] = [
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+
+  const { data: dbProjects } = useProjects();
+  const { data: dbSolutions } = useSolutions();
+  const { data: dbNotes } = useNotes();
+
+  const projectsToUse = dbProjects.length > 0 ? dbProjects.map(p => ({
+    slug: p.slug,
+    title: p.title,
+    category: p.category as any,
+    tagline: p.tagline,
+    description: p.overview,
+    status: (p.githubUrl ? 'completed' : 'in-progress') as any,
+    techStack: p.techStack ? p.techStack.flatMap(t => t.items) : [],
+    githubUrl: p.githubUrl,
+    demoUrl: p.demoUrl,
+    isFeatured: p.slug === 'study-mate-ai' || p.slug === 'timetable-maker',
+    metrics: p.metrics || []
+  })) : PROJECTS_DATA;
+
+  const solutionsToUse = dbSolutions.length > 0 ? dbSolutions.map(s => ({
+    slug: s.slug,
+    name: s.name,
+    category: s.category as any,
+    icon: <Server className="h-6 w-6 text-accent" />,
+    description: s.tagline,
+    audience: s.audience as any,
+    version: s.version,
+    status: 'active' as any,
+    features: s.features || [],
+    githubUrl: s.githubUrl,
+    demoUrl: s.demoUrl
+  })) : SOLUTIONS_DATA;
+
+  const notesToUse = dbNotes.length > 0 ? dbNotes.map(n => ({
+    slug: n.slug,
+    title: n.title,
+    category: n.category as any,
+    description: n.description,
+    difficulty: n.difficulty,
+    fileType: n.fileType as any,
+    readingTime: n.readingTime,
+    downloads: n.downloadsCount,
+    lastUpdated: n.lastUpdated,
+    youtubeUrl: n.youtubeUrl,
+    youtubeTitle: n.youtubeTitle,
+    isFeatured: n.slug === 'advanced-typescript-notes'
+  })) : NOTES_DATA;
   
   // States
   const [skillSearch, setSkillSearch] = useState('');
@@ -378,16 +428,16 @@ const Home: React.FC = () => {
     return matchesSearch && matchesTab;
   });
 
-  const filteredProjects = PROJECTS_DATA.filter((project) => {
+  const filteredProjects = projectsToUse.filter((project) => {
     return activeProjectFilter === 'All' || project.category === activeProjectFilter;
   });
 
-  const filteredSolutions = SOLUTIONS_DATA.filter((sol) => {
+  const filteredSolutions = solutionsToUse.filter((sol) => {
     return sol.name.toLowerCase().includes(solutionSearch.toLowerCase()) ||
            sol.description.toLowerCase().includes(solutionSearch.toLowerCase());
   });
 
-  const filteredNotes = NOTES_DATA.filter((note) => {
+  const filteredNotes = notesToUse.filter((note) => {
     const matchesSearch = note.title.toLowerCase().includes(notesSearch.toLowerCase()) ||
                           note.description.toLowerCase().includes(notesSearch.toLowerCase());
     const matchesCategory = activeNotesFilter === 'All' || note.category === activeNotesFilter;
@@ -400,7 +450,7 @@ const Home: React.FC = () => {
 
   const featuredNote = filteredNotes.find(note => note.isFeatured);
   const regularNotes = filteredNotes.filter(note => note !== featuredNote);
-  const popularNotes = [...NOTES_DATA].sort((a, b) => b.downloads - a.downloads).slice(0, 3);
+  const popularNotes = [...notesToUse].sort((a, b) => b.downloads - a.downloads).slice(0, 3);
 
   // Form submission handler
   const handleFormSubmit = (e: React.FormEvent) => {

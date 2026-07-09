@@ -1,18 +1,45 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Cpu, ExternalLink, Terminal } from 'lucide-react';
 import { HelmetSEO } from '@/components/seo/HelmetSEO';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { PROJECTS_REGISTRY } from '@/data/projects';
+import { PageLoader } from '@/components/ui/PageLoader';
+import { ProjectsService } from '@/services/ProjectsService';
+import type { ProjectData } from '@/data/projects';
 
 const ProjectDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  
+  const [project, setProject] = useState<ProjectData | null>(null);
+  const [projectsList, setProjectsList] = useState<ProjectData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Find project in data registry
-  const project = slug ? PROJECTS_REGISTRY[slug] : null;
+  const projectsService = new ProjectsService();
+
+  useEffect(() => {
+    if (!slug) return;
+    const fetchDetails = async () => {
+      setLoading(true);
+      try {
+        const item = await projectsService.getProject(slug);
+        setProject(item);
+        const list = await projectsService.getProjects();
+        setProjectsList(list);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDetails();
+  }, [slug]);
+
+  if (loading) {
+    return <PageLoader />;
+  }
 
   if (!project) {
     return (
@@ -21,7 +48,7 @@ const ProjectDetail: React.FC = () => {
         <Terminal className="h-12 w-12 text-muted mx-auto animate-pulse" />
         <h2 className="text-xl font-mono text-text font-bold">Case Study Not Found</h2>
         <p className="text-sm text-muted">
-          The requested project record is not found in the config files registry.
+          The requested project record is not found in the repository.
         </p>
         <Button variant="outline" onClick={() => navigate('/projects')}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to projects list
@@ -31,10 +58,10 @@ const ProjectDetail: React.FC = () => {
   }
 
   // Find next/prev projects
-  const keys = Object.keys(PROJECTS_REGISTRY);
-  const currentIdx = keys.indexOf(project.slug);
-  const prevSlug = currentIdx > 0 ? keys[currentIdx - 1] : null;
-  const nextSlug = currentIdx < keys.length - 1 ? keys[currentIdx + 1] : null;
+  const slugs = projectsList.map(p => p.slug);
+  const currentIdx = slugs.indexOf(project.slug);
+  const prevSlug = currentIdx > 0 ? slugs[currentIdx - 1] : null;
+  const nextSlug = currentIdx < slugs.length - 1 ? slugs[currentIdx + 1] : null;
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 md:py-16 space-y-16">
@@ -87,7 +114,7 @@ const ProjectDetail: React.FC = () => {
           <Card className="bg-surface border border-primary/5 p-6 space-y-4 shadow-sm">
             <h3 className="text-xs font-mono uppercase text-muted tracking-wider">Project Indicators</h3>
             <div className="divide-y divide-primary/5">
-              {project.metrics.map((metric, idx) => (
+              {project.metrics && project.metrics.map((metric, idx) => (
                 <div key={idx} className="flex justify-between py-2.5 text-xs font-mono">
                   <span className="text-muted">{metric.label}</span>
                   <span className="text-accent font-semibold">{metric.value}</span>
@@ -129,7 +156,7 @@ const ProjectDetail: React.FC = () => {
           <div className="space-y-4">
             <h2 className="text-xl sm:text-2xl font-bold text-text">Key Features</h2>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {project.features.map((feat, idx) => (
+              {project.features && project.features.map((feat, idx) => (
                 <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-muted">
                   <span className="h-5 w-5 rounded bg-accent/5 text-accent font-mono text-xs flex items-center justify-center shrink-0">
                     {idx + 1}
@@ -142,18 +169,24 @@ const ProjectDetail: React.FC = () => {
 
           {/* Journey, challenges & lessons */}
           <div className="space-y-8">
-            <div className="space-y-2">
-              <h3 className="text-lg font-bold text-text">Development Journey</h3>
-              <p className="text-xs sm:text-sm text-muted leading-relaxed">{project.journey}</p>
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-lg font-bold text-text">Key Technical Challenges</h3>
-              <p className="text-xs sm:text-sm text-muted leading-relaxed">{project.challenges}</p>
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-lg font-bold text-text">Lessons Learned</h3>
-              <p className="text-xs sm:text-sm text-muted leading-relaxed">{project.lessons}</p>
-            </div>
+            {project.journey && (
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-text">Development Journey</h3>
+                <p className="text-xs sm:text-sm text-muted leading-relaxed">{project.journey}</p>
+              </div>
+            )}
+            {project.challenges && (
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-text">Key Technical Challenges</h3>
+                <p className="text-xs sm:text-sm text-muted leading-relaxed">{project.challenges}</p>
+              </div>
+            )}
+            {project.lessons && (
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-text">Lessons Learned</h3>
+                <p className="text-xs sm:text-sm text-muted leading-relaxed">{project.lessons}</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -162,7 +195,7 @@ const ProjectDetail: React.FC = () => {
           <Card className="bg-surface border border-primary/5 p-6 space-y-6 shadow-sm">
             <h3 className="text-sm font-bold text-text">Technology Stack</h3>
             <div className="space-y-4">
-              {project.techStack.map((stack, idx) => (
+              {project.techStack && project.techStack.map((stack, idx) => (
                 <div key={idx} className="space-y-2">
                   <span className="text-[10px] text-muted font-mono uppercase tracking-wider font-semibold">{stack.category}</span>
                   <div className="flex flex-wrap gap-1.5">

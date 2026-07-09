@@ -1,18 +1,47 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Download, FileText, Play, Tag, Clock } from 'lucide-react';
 import { HelmetSEO } from '@/components/seo/HelmetSEO';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { NOTES_REGISTRY } from '@/data/notes';
+import { PageLoader } from '@/components/ui/PageLoader';
+import { NotesService } from '@/services/NotesService';
+import type { NoteData } from '@/data/notes';
 
 const NoteDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  
+  const [note, setNote] = useState<NoteData | null>(null);
+  const [relatedNotes, setRelatedNotes] = useState<NoteData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Find note in data registry
-  const note = slug ? NOTES_REGISTRY[slug] : null;
+  const notesService = new NotesService();
+
+  useEffect(() => {
+    if (!slug) return;
+    const fetchNote = async () => {
+      setLoading(true);
+      try {
+        const item = await notesService.getNote(slug);
+        setNote(item);
+        if (item) {
+          const list = await notesService.getNotes(item.category);
+          setRelatedNotes(list.filter(n => n.slug !== item.slug).slice(0, 2));
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNote();
+  }, [slug]);
+
+  if (loading) {
+    return <PageLoader />;
+  }
 
   if (!note) {
     return (
@@ -29,11 +58,6 @@ const NoteDetail: React.FC = () => {
       </div>
     );
   }
-
-  // Find related notes
-  const relatedNotes = Object.values(NOTES_REGISTRY)
-    .filter(n => n.slug !== note.slug && (n.category === note.category || n.difficulty === note.difficulty))
-    .slice(0, 2);
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 md:py-16 space-y-16">
@@ -141,18 +165,20 @@ const NoteDetail: React.FC = () => {
           )}
 
           {/* Note Tags */}
-          <div className="space-y-3 pt-4">
-            <span className="text-xs font-mono uppercase text-muted tracking-wider flex items-center gap-2">
-              <Tag className="h-4 w-4" /> Metadata Tags
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {note.tags.map((tag) => (
-                <span key={tag} className="px-3 py-1 rounded-full border border-primary/10 bg-surface text-xs text-muted font-mono">
-                  #{tag}
-                </span>
-              ))}
+          {note.tags && note.tags.length > 0 && (
+            <div className="space-y-3 pt-4">
+              <span className="text-xs font-mono uppercase text-muted tracking-wider flex items-center gap-2">
+                <Tag className="h-4 w-4" /> Metadata Tags
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {note.tags.map((tag) => (
+                  <span key={tag} className="px-3 py-1 rounded-full border border-primary/10 bg-surface text-xs text-muted font-mono">
+                    #{tag}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
 
