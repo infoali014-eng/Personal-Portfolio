@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layers, Plus, Trash2, Edit, X } from 'lucide-react';
 import { HelmetSEO } from '@/components/seo/HelmetSEO';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { PROJECTS_REGISTRY } from '@/data/projects';
+import { ProjectsService } from '@/services/ProjectsService';
 import type { ProjectData } from '@/data/projects';
 
 const ProjectsAdmin: React.FC = () => {
-  const [projectsList, setProjectsList] = useState<ProjectData[]>(Object.values(PROJECTS_REGISTRY));
+  const [projectsList, setProjectsList] = useState<ProjectData[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<ProjectData | null>(null);
 
@@ -21,6 +21,20 @@ const ProjectsAdmin: React.FC = () => {
   const [githubUrl, setGithubUrl] = useState('');
   const [demoUrl, setDemoUrl] = useState('');
 
+  const projectsService = new ProjectsService();
+
+  const loadProjects = async () => {
+    try {
+      const res = await projectsService.getProjects();
+      setProjectsList(res);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    loadProjects();
+  }, []);
 
   const openAddModal = () => {
     setEditingProject(null);
@@ -29,6 +43,7 @@ const ProjectsAdmin: React.FC = () => {
     setCategory('');
     setTagline('');
     setOverview('');
+    setGithubUrl('');
     setDemoUrl('');
     setIsModalOpen(true);
   };
@@ -45,47 +60,56 @@ const ProjectsAdmin: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingProject) {
-      // Edit record
-      setProjectsList(prev => prev.map(p => p.slug === editingProject.slug ? {
-        ...p,
-        title,
-        category,
-        tagline,
-        overview,
-        githubUrl,
-        demoUrl
-      } : p));
-    } else {
-      // Add new record
-      const newProj: ProjectData = {
-        slug: slug || title.toLowerCase().replace(/\s+/g, '-'),
-        title,
-        category,
-        tagline,
-        overview,
-        problem: 'Mock problem statement detail configured in CMS dashboard.',
-        solution: 'Mock solution statement detail configured in CMS dashboard.',
-        features: ['Feature 1 detail parsed from config.'],
-        techStack: [{ category: 'Core', items: ['TypeScript', 'Vite'] }],
-        journey: 'Mock journey outline.',
-        challenges: 'Mock challenges list.',
-        lessons: 'Mock lessons list.',
-        githubUrl,
-        demoUrl,
-        metrics: [{ label: 'Downloads', value: '0' }],
-        relatedSlugs: []
-      };
-      setProjectsList(prev => [...prev, newProj]);
+    try {
+      if (editingProject) {
+        // Edit record
+        await projectsService.updateProject(editingProject.slug, {
+          title,
+          category,
+          tagline,
+          overview,
+          githubUrl,
+          demoUrl
+        });
+      } else {
+        // Add new record
+        const newProj: ProjectData = {
+          slug: slug || title.toLowerCase().replace(/\s+/g, '-'),
+          title,
+          category,
+          tagline,
+          overview,
+          problem: 'Mock problem statement detail configured in CMS dashboard.',
+          solution: 'Mock solution statement detail configured in CMS dashboard.',
+          features: ['Feature 1 detail parsed from config.'],
+          techStack: [{ category: 'Core', items: ['TypeScript', 'Vite'] }],
+          journey: 'Mock journey outline.',
+          challenges: 'Mock challenges list.',
+          lessons: 'Mock lessons list.',
+          githubUrl,
+          demoUrl,
+          metrics: [{ label: 'Downloads', value: '0' }],
+          relatedSlugs: []
+        };
+        await projectsService.createProject(newProj);
+      }
+      setIsModalOpen(false);
+      loadProjects();
+    } catch (err) {
+      console.error(err);
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (slugToDelete: string) => {
+  const handleDelete = async (slugToDelete: string) => {
     if (window.confirm('Are you sure you want to delete this project record?')) {
-      setProjectsList(prev => prev.filter(p => p.slug !== slugToDelete));
+      try {
+        await projectsService.deleteProject(slugToDelete);
+        loadProjects();
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
@@ -124,7 +148,7 @@ const ProjectsAdmin: React.FC = () => {
                   <td className="p-4">
                     <div>
                       <h4 className="font-bold text-text">{proj.title}</h4>
-                      <span className="text-[10px] font-mono text-muted">/projects/{proj.slug}</span>
+                      <span className="text-[10px] text-muted font-mono">/projects/{proj.slug}</span>
                     </div>
                   </td>
                   <td className="p-4">
@@ -132,9 +156,11 @@ const ProjectsAdmin: React.FC = () => {
                       {proj.category}
                     </Badge>
                   </td>
-                  <td className="p-4 font-mono text-[10px] space-y-0.5 text-muted">
-                    {proj.githubUrl && <div className="truncate">GitHub: {proj.githubUrl}</div>}
-                    {proj.demoUrl && <div className="truncate">Demo: {proj.demoUrl}</div>}
+                  <td className="p-4 font-mono text-xs text-muted">
+                    <div className="flex flex-col gap-1">
+                      {proj.githubUrl && <span className="truncate max-w-[200px]">Git: {proj.githubUrl}</span>}
+                      {proj.demoUrl && <span className="truncate max-w-[200px]">Demo: {proj.demoUrl}</span>}
+                    </div>
                   </td>
                   <td className="p-4 text-right">
                     <div className="flex justify-end gap-2">
@@ -161,7 +187,7 @@ const ProjectsAdmin: React.FC = () => {
         </div>
       </Card>
 
-      {/* Add/Edit Modal Form */}
+      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <Card className="bg-surface border border-primary/10 max-w-lg w-full p-6 space-y-4 shadow-xl relative max-h-[90vh] overflow-y-auto">
@@ -173,7 +199,7 @@ const ProjectsAdmin: React.FC = () => {
             </button>
 
             <h3 className="text-lg font-bold text-text flex items-center gap-2 border-b border-primary/5 pb-2">
-              {editingProject ? 'Edit Project Record' : 'New Project Registration'}
+              {editingProject ? 'Edit Project Configs' : 'Add New Project'}
             </h3>
 
             <form onSubmit={handleSave} className="space-y-4 text-xs sm:text-sm">
@@ -185,17 +211,18 @@ const ProjectsAdmin: React.FC = () => {
                   onChange={(e) => setTitle(e.target.value)} 
                   required
                   placeholder="e.g. Study Mate AI"
-                  className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
+                  className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-accent"
                 />
               </div>
 
               {!editingProject && (
                 <div className="space-y-1">
-                  <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Slug (Optional URL key)</label>
+                  <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Slug (Unique identifier) *</label>
                   <input 
                     type="text" 
                     value={slug} 
                     onChange={(e) => setSlug(e.target.value)} 
+                    required
                     placeholder="e.g. study-mate-ai"
                     className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
                   />
@@ -221,25 +248,26 @@ const ProjectsAdmin: React.FC = () => {
                   value={tagline} 
                   onChange={(e) => setTagline(e.target.value)} 
                   required
-                  placeholder="Short marketing outline description"
+                  placeholder="Short marketing hook statement..."
                   className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Overview Description</label>
+                <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Overview / Description *</label>
                 <textarea 
                   value={overview} 
                   onChange={(e) => setOverview(e.target.value)} 
-                  rows={3}
-                  placeholder="Full background overview detail..."
+                  required
+                  rows={4}
+                  placeholder="Detailed project summary information..."
                   className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-mono uppercase text-muted tracking-wider">GitHub Link</label>
+                  <label className="text-[10px] font-mono uppercase text-muted tracking-wider">GitHub Code Repository Link</label>
                   <input 
                     type="text" 
                     value={githubUrl} 
@@ -249,12 +277,12 @@ const ProjectsAdmin: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Demo Link</label>
+                  <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Live Demo Deployment Link</label>
                   <input 
                     type="text" 
                     value={demoUrl} 
                     onChange={(e) => setDemoUrl(e.target.value)} 
-                    placeholder="https://..."
+                    placeholder="https://demo.com"
                     className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
                   />
                 </div>

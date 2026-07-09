@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, Plus, Trash2, Edit, X } from 'lucide-react';
 import { HelmetSEO } from '@/components/seo/HelmetSEO';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { NOTES_REGISTRY } from '@/data/notes';
+import { NotesService } from '@/services/NotesService';
 import type { NoteData } from '@/data/notes';
 
 const NotesAdmin: React.FC = () => {
-  const [notesList, setNotesList] = useState<NoteData[]>(Object.values(NOTES_REGISTRY));
+  const [notesList, setNotesList] = useState<NoteData[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<NoteData | null>(null);
 
   // Form states
   const [title, setTitle] = useState('');
+  const [slug, setSlug] = useState('');
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [difficulty, setDifficulty] = useState<'Beginner' | 'Intermediate' | 'Advanced'>('Beginner');
@@ -22,9 +23,25 @@ const NotesAdmin: React.FC = () => {
   const [youtubeTitle, setYoutubeTitle] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
 
+  const notesService = new NotesService();
+
+  const loadNotes = async () => {
+    try {
+      const res = await notesService.getNotes();
+      setNotesList(res);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    loadNotes();
+  }, []);
+
   const openAddModal = () => {
     setEditingNote(null);
     setTitle('');
+    setSlug('');
     setCategory('');
     setDescription('');
     setDifficulty('Beginner');
@@ -38,6 +55,7 @@ const NotesAdmin: React.FC = () => {
   const openEditModal = (note: NoteData) => {
     setEditingNote(note);
     setTitle(note.title);
+    setSlug(note.slug);
     setCategory(note.category);
     setDescription(note.description);
     setDifficulty(note.difficulty);
@@ -48,43 +66,52 @@ const NotesAdmin: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingNote) {
-      setNotesList(prev => prev.map(n => n.slug === editingNote.slug ? {
-        ...n,
-        title,
-        category,
-        description,
-        difficulty,
-        fileType,
-        readingTime,
-        youtubeTitle,
-        youtubeUrl
-      } : n));
-    } else {
-      const newNote: NoteData = {
-        slug: title.toLowerCase().replace(/\s+/g, '-'),
-        title,
-        category,
-        description,
-        difficulty,
-        fileType,
-        readingTime,
-        downloadsCount: 0,
-        lastUpdated: new Date().toISOString().split('T')[0],
-        youtubeTitle,
-        youtubeUrl,
-        tags: []
-      };
-      setNotesList(prev => [...prev, newNote]);
+    try {
+      if (editingNote) {
+        await notesService.updateNote(editingNote.slug, {
+          title,
+          category,
+          description,
+          difficulty,
+          fileType,
+          readingTime,
+          youtubeTitle,
+          youtubeUrl
+        });
+      } else {
+        const newNote: NoteData = {
+          slug: slug || title.toLowerCase().replace(/\s+/g, '-'),
+          title,
+          category,
+          description,
+          difficulty,
+          fileType,
+          readingTime,
+          downloadsCount: 0,
+          lastUpdated: new Date().toISOString().split('T')[0],
+          youtubeTitle,
+          youtubeUrl,
+          tags: []
+        };
+        await notesService.createNote(newNote);
+      }
+      setIsModalOpen(false);
+      loadNotes();
+    } catch (err) {
+      console.error(err);
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (slugToDelete: string) => {
+  const handleDelete = async (slugToDelete: string) => {
     if (window.confirm('Are you sure you want to delete this resource record?')) {
-      setNotesList(prev => prev.filter(n => n.slug !== slugToDelete));
+      try {
+        await notesService.deleteNote(slugToDelete);
+        loadNotes();
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
@@ -188,6 +215,20 @@ const NotesAdmin: React.FC = () => {
                   className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
                 />
               </div>
+
+              {!editingNote && (
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Slug (Unique identifier) *</label>
+                  <input 
+                    type="text" 
+                    value={slug} 
+                    onChange={(e) => setSlug(e.target.value)} 
+                    required
+                    placeholder="e.g. advanced-ts-notes"
+                    className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
+                  />
+                </div>
+              )}
 
               <div className="space-y-1">
                 <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Category *</label>

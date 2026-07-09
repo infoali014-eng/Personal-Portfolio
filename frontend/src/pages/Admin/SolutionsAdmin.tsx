@@ -1,82 +1,109 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Server, Plus, Trash2, Edit, X } from 'lucide-react';
 import { HelmetSEO } from '@/components/seo/HelmetSEO';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { SOLUTIONS_REGISTRY } from '@/data/solutions';
+import { SolutionsService } from '@/services/SolutionsService';
 import type { SolutionData } from '@/data/solutions';
 
 const SolutionsAdmin: React.FC = () => {
-  const [solutionsList, setSolutionsList] = useState<SolutionData[]>(Object.values(SOLUTIONS_REGISTRY));
+  const [solutionsList, setSolutionsList] = useState<SolutionData[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSolution, setEditingSolution] = useState<SolutionData | null>(null);
 
   // Form states
   const [name, setName] = useState('');
+  const [slug, setSlug] = useState('');
   const [category, setCategory] = useState('');
   const [tagline, setTagline] = useState('');
   const [overview, setOverview] = useState('');
-  const [version, setVersion] = useState('');
   const [audience, setAudience] = useState('');
+  const [version, setVersion] = useState('1.0.0');
+
+  const solutionsService = new SolutionsService();
+
+  const loadSolutions = async () => {
+    try {
+      const res = await solutionsService.getSolutions();
+      setSolutionsList(res);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    loadSolutions();
+  }, []);
 
   const openAddModal = () => {
     setEditingSolution(null);
     setName('');
+    setSlug('');
     setCategory('');
     setTagline('');
     setOverview('');
+    setAudience('');
     setVersion('1.0.0');
-    setAudience('Student');
     setIsModalOpen(true);
   };
 
   const openEditModal = (sol: SolutionData) => {
     setEditingSolution(sol);
     setName(sol.name);
+    setSlug(sol.slug);
     setCategory(sol.category);
     setTagline(sol.tagline);
     setOverview(sol.overview);
-    setVersion(sol.version);
     setAudience(sol.audience);
+    setVersion(sol.version);
     setIsModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingSolution) {
-      setSolutionsList(prev => prev.map(s => s.slug === editingSolution.slug ? {
-        ...s,
-        name,
-        category,
-        tagline,
-        overview,
-        version,
-        audience
-      } : s));
-    } else {
-      const newSol: SolutionData = {
-        slug: name.toLowerCase().replace(/\s+/g, '-'),
-        name,
-        category,
-        tagline,
-        overview,
-        audience,
-        version,
-        features: ['Mock feature capability listed in CMS.'],
-        benefits: ['Mock benefit statement listed in CMS.'],
-        roadmap: [{ phase: 'Phase 1', title: 'Scaffolding', desc: 'Mock roadmap item desc.' }],
-        faqs: [],
-        downloadsCount: 0
-      };
-      setSolutionsList(prev => [...prev, newSol]);
+    try {
+      if (editingSolution) {
+        await solutionsService.updateSolution(editingSolution.slug, {
+          name,
+          category,
+          tagline,
+          overview,
+          audience,
+          version
+        });
+      } else {
+        const newSol: SolutionData = {
+          slug: slug || name.toLowerCase().replace(/\s+/g, '-'),
+          name,
+          category,
+          tagline,
+          overview,
+          audience,
+          version,
+          features: ['Feature 1 configured in CMS.'],
+          benefits: ['Benefit 1 detail.'],
+          roadmap: [{ phase: 'Phase 1', title: 'Beta Trial', desc: 'Deploying to pilot campuses.' }],
+          faqs: [],
+          downloadsCount: 0
+        };
+        await solutionsService.createSolution(newSol);
+      }
+      setIsModalOpen(false);
+      loadSolutions();
+    } catch (err) {
+      console.error(err);
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (slugToDelete: string) => {
+  const handleDelete = async (slugToDelete: string) => {
     if (window.confirm('Are you sure you want to delete this solution?')) {
-      setSolutionsList(prev => prev.filter(s => s.slug !== slugToDelete));
+      try {
+        await solutionsService.deleteSolution(slugToDelete);
+        loadSolutions();
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
@@ -88,22 +115,22 @@ const SolutionsAdmin: React.FC = () => {
       <div className="flex justify-between items-center border-b border-primary/10 pb-4">
         <div>
           <h2 className="text-2xl font-bold text-text flex items-center gap-2">
-            <Server className="h-6 w-6 text-accent animate-pulse" /> Solutions Registry
+            <Server className="h-6 w-6 text-accent animate-pulse" /> Solutions Platform
           </h2>
-          <p className="text-xs text-muted mt-0.5">Manage deployed products and constraint parameters displays.</p>
+          <p className="text-xs text-muted mt-0.5">Manage deployed SaaS tools and academic scheduler engines cataloged on the site.</p>
         </div>
         <Button variant="primary" size="sm" onClick={openAddModal}>
           <Plus className="mr-1.5 h-4 w-4" /> Add Solution
         </Button>
       </div>
 
-      {/* Table grid */}
+      {/* Table list */}
       <Card className="bg-surface border border-primary/5 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-primary/5 bg-primary/5 text-[10px] font-mono text-muted uppercase tracking-wider">
-                <th className="p-4">Name</th>
+                <th className="p-4">Solution</th>
                 <th className="p-4">Category</th>
                 <th className="p-4">Audience</th>
                 <th className="p-4">Version</th>
@@ -116,7 +143,7 @@ const SolutionsAdmin: React.FC = () => {
                   <td className="p-4">
                     <div>
                       <h4 className="font-bold text-text">{sol.name}</h4>
-                      <span className="text-[10px] font-mono text-muted">/solutions/{sol.slug}</span>
+                      <span className="text-[10px] text-muted font-mono">/solutions/{sol.slug}</span>
                     </div>
                   </td>
                   <td className="p-4">
@@ -179,6 +206,20 @@ const SolutionsAdmin: React.FC = () => {
                 />
               </div>
 
+              {!editingSolution && (
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Slug (Unique identifier) *</label>
+                  <input 
+                    type="text" 
+                    value={slug} 
+                    onChange={(e) => setSlug(e.target.value)} 
+                    required
+                    placeholder="e.g. study-mate-ai"
+                    className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
+                  />
+                </div>
+              )}
+
               <div className="space-y-1">
                 <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Category *</label>
                 <input 
@@ -186,7 +227,7 @@ const SolutionsAdmin: React.FC = () => {
                   value={category} 
                   onChange={(e) => setCategory(e.target.value)} 
                   required
-                  placeholder="e.g. Educational Productivity"
+                  placeholder="e.g. Developer Tool"
                   className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
                 />
               </div>
@@ -198,23 +239,35 @@ const SolutionsAdmin: React.FC = () => {
                   value={tagline} 
                   onChange={(e) => setTagline(e.target.value)} 
                   required
-                  placeholder="Short marketing outline details"
+                  placeholder="Short marketing hook statement..."
                   className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Overview Description</label>
+                <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Overview / Description *</label>
                 <textarea 
                   value={overview} 
                   onChange={(e) => setOverview(e.target.value)} 
-                  rows={3}
-                  placeholder="Background details..."
+                  required
+                  rows={4}
+                  placeholder="Detailed solution overview..."
                   className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Target Audience *</label>
+                  <input 
+                    type="text" 
+                    value={audience} 
+                    onChange={(e) => setAudience(e.target.value)} 
+                    required
+                    placeholder="e.g. Developers"
+                    className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
+                  />
+                </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Version *</label>
                   <input 
@@ -222,17 +275,7 @@ const SolutionsAdmin: React.FC = () => {
                     value={version} 
                     onChange={(e) => setVersion(e.target.value)} 
                     required
-                    placeholder="e.g. 1.0.0"
-                    className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Target Audience</label>
-                  <input 
-                    type="text" 
-                    value={audience} 
-                    onChange={(e) => setAudience(e.target.value)} 
-                    placeholder="e.g. Student, Teacher, Developer"
+                    placeholder="1.0.0"
                     className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
                   />
                 </div>
