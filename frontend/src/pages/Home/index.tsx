@@ -60,7 +60,8 @@ interface JourneyMilestone {
   year: string;
   title: string;
   description: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
+  iconName?: string;
 }
 
 interface ProjectItem {
@@ -156,14 +157,7 @@ const SKILLS_DATA: SkillItem[] = [
   { name: 'Vercel', category: 'tools', icon: <Award className="h-5 w-5 text-accent" />, level: 'Advanced' },
 ];
 
-const MILESTONES_DATA: JourneyMilestone[] = [
-  { year: '2020', title: 'Started Programming', description: 'Began exploring software structures, coding calculators, and studying core algorithms.', icon: <Code className="h-5 w-5" /> },
-  { year: '2021', title: 'First Projects Shipped', description: 'Released responsive layouts, establishing foundational frontend formatting scripts.', icon: <Award className="h-5 w-5" /> },
-  { year: '2022', title: 'Started YouTube Channel', description: 'Launched tutorials explaining complex algorithm steps and rendering guides.', icon: <Users className="h-5 w-5" /> },
-  { year: '2023', title: 'Created Study Mate AI', description: 'Synthesized vector search schemas to compile automated flashcards and exam worksheets.', icon: <BookOpen className="h-5 w-5" /> },
-  { year: '2024', title: 'Founded Deep Code', description: 'Established campus developer networks coordinating workshops and utilities.', icon: <Cpu className="h-5 w-5" /> },
-  { year: '2026+', title: 'Future Roadmap', description: 'Scaling dynamic developer SaaS components and cloud hosting workflows.', icon: <TrendingUp className="h-5 w-5" /> }
-];
+
 
 const PROJECTS_DATA: ProjectItem[] = [
   {
@@ -471,6 +465,26 @@ const Home: React.FC = () => {
   const [sec08Headline, setSec08Headline] = useState("Let's Build Something Meaningful");
   const [sec08Desc, setSec08Desc] = useState("Whether you're a student, developer, educator, recruiter, or organization, I'd love to hear from you. Let's build something that creates real impact.");
 
+  const [roadmap, setRoadmap] = useState<JourneyMilestone[]>([]);
+
+  const getRoadmapIcon = (name?: string) => {
+    switch (name) {
+      case 'Code':
+        return <Code className="h-4 w-4" />;
+      case 'Award':
+        return <Award className="h-4 w-4" />;
+      case 'Users':
+        return <Users className="h-4 w-4" />;
+      case 'BookOpen':
+        return <BookOpen className="h-4 w-4" />;
+      case 'Cpu':
+        return <Cpu className="h-4 w-4" />;
+      case 'TrendingUp':
+      default:
+        return <TrendingUp className="h-4 w-4" />;
+    }
+  };
+
   React.useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -546,6 +560,18 @@ const Home: React.FC = () => {
         setSec08Title(s08T);
         setSec08Headline(s08H);
         setSec08Desc(s08D);
+
+        const roadStr = await settingsService.getSetting(
+          'journeyRoadmap', 
+          JSON.stringify([
+            { year: '2022 - 2023', title: 'Learned Programming Fundamentals', description: 'Started programming to solve problems and create efficiency, learning C++ and C#.', iconName: 'Code' },
+            { year: '2024 - 2025', title: 'Explored Software Development', description: 'Developed desktop utility tools, including Timetable Maker, and built projects with Streamlit.', iconName: 'Award' },
+            { year: '2025', title: 'Began University Journey', description: 'Enrolled in BS Computer Science at University of Engineering and Technology (RCET) to study theory.', iconName: 'Users' },
+            { year: 'Present', title: 'Building Projects & Deep Code', description: 'Currently building Study Mate AI, Personal Portfolio Platform, and planning Deep Code.', iconName: 'Cpu' },
+            { year: 'Future', title: 'Entrepreneurship & Innovation', description: 'Aiming to create innovative technology products and businesses that solve real-world problems.', iconName: 'TrendingUp' }
+          ])
+        );
+        setRoadmap(JSON.parse(roadStr));
       } catch (err) {
         console.error('Error fetching settings:', err);
       }
@@ -893,13 +919,13 @@ const Home: React.FC = () => {
           <div className="absolute top-0 bottom-0 left-4 md:left-1/2 w-0.5 bg-primary/10 transform md:-translate-x-1/2" />
 
           <div className="space-y-12">
-            {MILESTONES_DATA.map((milestone, idx) => {
+            {roadmap.map((milestone, idx) => {
               const isEven = idx % 2 === 0;
 
               return (
                 <div key={idx} className="relative flex flex-col md:flex-row md:items-center">
                   <div className="absolute left-4 md:left-1/2 h-8 w-8 rounded-full border-4 border-background bg-accent text-white flex items-center justify-center transform -translate-x-1/2 z-10 shadow-sm">
-                    {milestone.icon}
+                    {getRoadmapIcon(milestone.iconName)}
                   </div>
 
                   <div className={`w-full md:w-1/2 pl-12 md:pl-0 md:pr-12 md:text-right ${isEven ? 'block' : 'md:invisible md:h-0 overflow-hidden'}`}>
