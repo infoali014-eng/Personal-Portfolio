@@ -1696,35 +1696,6 @@ const Home: React.FC = () => {
 
           {/* Right: Contact Information */}
           <div className="lg:col-span-5 space-y-6">
-            <Card className="bg-surface border border-primary/5 p-6 space-y-4 shadow-sm">
-              <h4 className="font-bold text-text text-base">Direct Details</h4>
-              
-              <div className="divide-y divide-primary/5 text-xs font-mono text-muted">
-                <div className="flex justify-between py-2.5">
-                  <span>Location</span>
-                  <span className="text-text font-semibold">Zurich, Switzerland</span>
-                </div>
-                <div className="flex justify-between py-2.5">
-                  <span>Timezone</span>
-                  <span className="text-text font-semibold">CET (UTC+1)</span>
-                </div>
-                <div className="flex justify-between py-2.5">
-                  <span>Availability</span>
-                  <span className="text-success font-semibold flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Active
-                  </span>
-                </div>
-                <div className="flex justify-between py-2.5">
-                  <span>Expected Response</span>
-                  <span className="text-text font-semibold">&lt; 24 Hours</span>
-                </div>
-                <div className="flex justify-between py-2.5">
-                  <span>Email</span>
-                  <span className="text-accent font-semibold">ali@deepcode.cc</span>
-                </div>
-              </div>
-            </Card>
-
             {/* Social Block */}
             <Card className="bg-surface border border-primary/5 p-6 space-y-3 shadow-sm">
               <h4 className="font-bold text-text text-base">Social Profiles Network</h4>
