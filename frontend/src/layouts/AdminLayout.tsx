@@ -11,7 +11,6 @@ import {
   Image, 
   Inbox, 
   Settings, 
-  Cpu, 
   Menu, 
   X, 
   Server
@@ -49,7 +48,7 @@ export const AdminLayout: React.FC = () => {
       <aside className="hidden lg:flex w-64 border-r border-primary/10 bg-surface p-6 flex-col justify-between shrink-0">
         <div className="space-y-6">
           <div className="flex items-center gap-2 font-mono text-lg font-bold tracking-wider text-accent">
-            <Cpu className="h-5 w-5 animate-pulse" />
+            <img src="/logo.png" alt="Logo" className="h-5 w-auto object-contain" />
             <span>CREATOR.CMS</span>
           </div>
 

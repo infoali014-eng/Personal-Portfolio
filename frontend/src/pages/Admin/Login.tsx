@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Cpu, Lock, Mail, AlertCircle, CheckCircle } from 'lucide-react';
+import { Lock, Mail, AlertCircle, CheckCircle } from 'lucide-react';
 import { HelmetSEO } from '@/components/seo/HelmetSEO';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -56,8 +56,8 @@ const Login: React.FC = () => {
 
       <Card className="max-w-md w-full bg-surface border border-primary/10 p-8 space-y-6 rounded-3xl shadow-xl">
         <div className="text-center space-y-2">
-          <div className="inline-flex p-3 bg-accent/5 rounded-2xl border border-accent/10 text-accent mb-2">
-            <Cpu className="h-6 w-6 animate-pulse" />
+          <div className="inline-flex p-2 bg-accent/5 rounded-2xl border border-accent/10 mb-2">
+            <img src="/logo.png" alt="Logo" className="h-8 w-auto object-contain" />
           </div>
           <h2 className="text-2xl font-bold text-text">CREATOR.CMS</h2>
           <p className="text-xs text-muted">Authenticate to manage your portfolio and university networks.</p>

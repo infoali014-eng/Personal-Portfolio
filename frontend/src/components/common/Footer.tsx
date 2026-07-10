@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { ArrowUp, Cpu } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { settingsService } from '@/services/SettingsService';
 
@@ -50,7 +50,7 @@ export const Footer: React.FC = () => {
           {/* Logo & Mission Statement */}
           <div className="md:col-span-4 space-y-4">
             <NavLink to="/" className="flex items-center gap-2 font-mono text-lg font-bold tracking-wider text-accent hover:text-highlight w-fit">
-              <Cpu className="h-5 w-5 text-accent animate-pulse" />
+              <img src="/logo.png" alt="Logo" className="h-6 w-auto object-contain" />
               <span>{logoText}</span>
             </NavLink>
             <p className="text-xs sm:text-sm text-muted leading-relaxed max-w-xs">

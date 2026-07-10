@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Sun, Moon, Cpu, Menu, X } from 'lucide-react';
+import { Sun, Moon, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NAV_ITEMS } from '@/constants/navigation';
 import { useTheme } from '@/hooks/useTheme';
@@ -36,7 +36,7 @@ export const Navbar: React.FC = () => {
           {/* Logo (Left) */}
           <div className="flex flex-shrink-0 items-center gap-2">
             <NavLink to="/" className="flex items-center gap-2 font-mono text-lg font-bold tracking-wider text-accent hover:text-highlight">
-              <Cpu className="h-5 w-5 text-accent animate-pulse" />
+              <img src="/logo.png" alt="Logo" className="h-6 w-auto object-contain" />
               <span>{logoText}</span>
             </NavLink>
           </div>
