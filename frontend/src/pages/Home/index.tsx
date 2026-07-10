@@ -433,8 +433,46 @@ const Home: React.FC = () => {
   const [heroSubtitle, setHeroSubtitle] = useState('CS Student @ University | Founder of Deep Code');
   const [heroDescription, setHeroDescription] = useState("I'm a software developer focused on designing full-stack systems, automated learning tools, and coordinating open campus developer networks.");
 
+  // Dynamic Section Settings
+  const [sec01Title, setSec01Title] = useState('01 / Story & Mission');
+  const [sec01Headline, setSec01Headline] = useState('Engineering solutions for educational systems.');
+  const [sec01Desc, setSec01Desc] = useState(`I'm a Computer Science student dedicated to developing systems that address actual constraints. My mission is to bridge the gap between academic theory and practical developer execution.\n\nAs the founder of Deep Code, I coordinate university developer networks, building tools like Study Mate AI to synthesize course documents and help students review materials dynamically.`);
+
+  const [sec02Title, setSec02Title] = useState('02 / Capabilities');
+  const [sec02Headline, setSec02Headline] = useState('Skills & Tooling Matrix');
+
+  const [sec03Title, setSec03Title] = useState('03 / Milestones');
+  const [sec03Val1, setSec03Val1] = useState(12);
+  const [sec03Lbl1, setSec03Lbl1] = useState('Projects Shipped');
+  const [sec03Val2, setSec03Val2] = useState(1500);
+  const [sec03Lbl2, setSec03Lbl2] = useState('Students Helped');
+  const [sec03Val3, setSec03Val3] = useState(4);
+  const [sec03Lbl3, setSec03Lbl3] = useState('Years Learning');
+  const [sec03Val4, setSec03Val4] = useState(10);
+  const [sec03Lbl4, setSec03Lbl4] = useState('Technologies');
+
+  const [sec04Title, setSec04Title] = useState('04 / Software Catalog');
+  const [sec04Headline, setSec04Headline] = useState('Featured Projects');
+  const [sec04Desc, setSec04Desc] = useState("A collection of software, AI tools, and educational platforms I've built to solve real problems.");
+
+  const [sec05Title, setSec05Title] = useState('05 / Operational Products');
+  const [sec05Headline, setSec05Headline] = useState('SaaS Products & Deployed Solutions');
+  const [sec05Desc, setSec05Desc] = useState('Explore commercial deployments, release frameworks, and target user statistics.');
+
+  const [sec06Title, setSec06Title] = useState('06 / Developer Society Network');
+  const [sec06Headline, setSec06Headline] = useState('Deep Code Campus Chapters');
+  const [sec06Desc, setSec06Desc] = useState('Scaling student-built technologies solving real academic issues.');
+
+  const [sec07Title, setSec07Title] = useState('07 / Educational Resources Registry');
+  const [sec07Headline, setSec07Headline] = useState('University Cheat Sheets & Technical Notes');
+  const [sec07Desc, setSec07Desc] = useState('Download open-source study guides, algorithm screencasts, and exam notes.');
+
+  const [sec08Title, setSec08Title] = useState('08 / Direct Inquiries Gateway');
+  const [sec08Headline, setSec08Headline] = useState("Let's Build Something Meaningful");
+  const [sec08Desc, setSec08Desc] = useState("Whether you're a student, developer, educator, recruiter, or organization, I'd love to hear from you. Let's build something that creates real impact.");
+
   React.useEffect(() => {
-    const fetchHero = async () => {
+    const fetchSettings = async () => {
       try {
         const headline = await settingsService.getSetting('heroHeadline', 'Building tools that solve real problems — one line of code at a time.');
         const sub = await settingsService.getSetting('heroSubtitle', 'CS Student @ University | Founder of Deep Code');
@@ -442,11 +480,77 @@ const Home: React.FC = () => {
         setHeroHeadline(headline);
         setHeroSubtitle(sub);
         setHeroDescription(desc);
+
+        const s01T = await settingsService.getSetting('sec01Title', '01 / Story & Mission');
+        const s01H = await settingsService.getSetting('sec01Headline', 'Engineering solutions for educational systems.');
+        const s01D = await settingsService.getSetting('sec01Desc', `I'm a Computer Science student dedicated to developing systems that address actual constraints. My mission is to bridge the gap between academic theory and practical developer execution.\n\nAs the founder of Deep Code, I coordinate university developer networks, building tools like Study Mate AI to synthesize course documents and help students review materials dynamically.`);
+        setSec01Title(s01T);
+        setSec01Headline(s01H);
+        setSec01Desc(s01D);
+
+        const s02T = await settingsService.getSetting('sec02Title', '02 / Capabilities');
+        const s02H = await settingsService.getSetting('sec02Headline', 'Skills & Tooling Matrix');
+        setSec02Title(s02T);
+        setSec02Headline(s02H);
+
+        const s03T = await settingsService.getSetting('sec03Title', '03 / Milestones');
+        const s03V1 = await settingsService.getSetting('sec03Val1', '12');
+        const s03L1 = await settingsService.getSetting('sec03Lbl1', 'Projects Shipped');
+        const s03V2 = await settingsService.getSetting('sec03Val2', '1500');
+        const s03L2 = await settingsService.getSetting('sec03Lbl2', 'Students Helped');
+        const s03V3 = await settingsService.getSetting('sec03Val3', '4');
+        const s03L3 = await settingsService.getSetting('sec03Lbl3', 'Years Learning');
+        const s03V4 = await settingsService.getSetting('sec03Val4', '10');
+        const s03L4 = await settingsService.getSetting('sec03Lbl4', 'Technologies');
+        setSec03Title(s03T);
+        setSec03Val1(Number(s03V1));
+        setSec03Lbl1(s03L1);
+        setSec03Val2(Number(s03V2));
+        setSec03Lbl2(s03L2);
+        setSec03Val3(Number(s03V3));
+        setSec03Lbl3(s03L3);
+        setSec03Val4(Number(s03V4));
+        setSec03Lbl4(s03L4);
+
+        const s04T = await settingsService.getSetting('sec04Title', '04 / Software Catalog');
+        const s04H = await settingsService.getSetting('sec04Headline', 'Featured Projects');
+        const s04D = await settingsService.getSetting('sec04Desc', "A collection of software, AI tools, and educational platforms I've built to solve real problems.");
+        setSec04Title(s04T);
+        setSec04Headline(s04H);
+        setSec04Desc(s04D);
+
+        const s05T = await settingsService.getSetting('sec05Title', '05 / Operational Products');
+        const s05H = await settingsService.getSetting('sec05Headline', 'SaaS Products & Deployed Solutions');
+        const s05D = await settingsService.getSetting('sec05Desc', 'Explore commercial deployments, release frameworks, and target user statistics.');
+        setSec05Title(s05T);
+        setSec05Headline(s05H);
+        setSec05Desc(s05D);
+
+        const s06T = await settingsService.getSetting('sec06Title', '06 / Developer Society Network');
+        const s06H = await settingsService.getSetting('sec06Headline', 'Deep Code Campus Chapters');
+        const s06D = await settingsService.getSetting('sec06Desc', 'Scaling student-built technologies solving real academic issues.');
+        setSec06Title(s06T);
+        setSec06Headline(s06H);
+        setSec06Desc(s06D);
+
+        const s07T = await settingsService.getSetting('sec07Title', '07 / Educational Resources Registry');
+        const s07H = await settingsService.getSetting('sec07Headline', 'University Cheat Sheets & Technical Notes');
+        const s07D = await settingsService.getSetting('sec07Desc', 'Download open-source study guides, algorithm screencasts, and exam notes.');
+        setSec07Title(s07T);
+        setSec07Headline(s07H);
+        setSec07Desc(s07D);
+
+        const s08T = await settingsService.getSetting('sec08Title', '08 / Direct Inquiries Gateway');
+        const s08H = await settingsService.getSetting('sec08Headline', "Let's Build Something Meaningful");
+        const s08D = await settingsService.getSetting('sec08Desc', "Whether you're a student, developer, educator, recruiter, or organization, I'd love to hear from you. Let's build something that creates real impact.");
+        setSec08Title(s08T);
+        setSec08Headline(s08H);
+        setSec08Desc(s08D);
       } catch (err) {
-        console.error('Error fetching hero settings:', err);
+        console.error('Error fetching settings:', err);
       }
     };
-    fetchHero();
+    fetchSettings();
   }, []);
 
   const filteredSkills = SKILLS_DATA.filter((skill) => {
@@ -657,18 +761,13 @@ const Home: React.FC = () => {
           <div className="lg:col-span-7 space-y-6">
             <div className="flex items-center gap-2 text-accent font-mono text-xs uppercase tracking-wider">
               <Users className="h-4 w-4" />
-              <span>01 / Story & Mission</span>
+              <span>{sec01Title}</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-text">
-              Engineering solutions for educational systems.
+              {sec01Headline}
             </h2>
-            <div className="space-y-4 text-sm sm:text-base text-muted leading-relaxed max-w-2xl">
-              <p>
-                I'm a Computer Science student dedicated to developing systems that address actual constraints. My mission is to bridge the gap between academic theory and practical developer execution.
-              </p>
-              <p>
-                As the founder of <strong>Deep Code</strong>, I coordinate university developer networks, building tools like Study Mate AI to synthesize course documents and help students review materials dynamically.
-              </p>
+            <div className="space-y-4 text-sm sm:text-base text-muted leading-relaxed max-w-2xl whitespace-pre-wrap">
+              {sec01Desc}
             </div>
 
             <div className="flex flex-wrap gap-4 pt-2">
@@ -681,22 +780,22 @@ const Home: React.FC = () => {
             </div>
           </div>
 
-          <div className="lg:col-span-5 grid grid-cols-2 gap-4">
+          <div className="lg:col-span-5 grid grid-cols-2 gap-4" aria-label={sec03Title}>
             <Card className="flex flex-col justify-center p-6 text-center space-y-2 bg-surface border border-primary/5 shadow-sm hover:shadow-md transition-shadow">
-              <Counter value={12} suffix="+" className="text-3xl sm:text-4xl font-extrabold text-accent font-mono" />
-              <p className="text-[10px] sm:text-xs text-muted uppercase font-mono tracking-wider font-medium">Projects Shipped</p>
+              <Counter value={sec03Val1} suffix="+" className="text-3xl sm:text-4xl font-extrabold text-accent font-mono" />
+              <p className="text-[10px] sm:text-xs text-muted uppercase font-mono tracking-wider font-medium">{sec03Lbl1}</p>
             </Card>
             <Card className="flex flex-col justify-center p-6 text-center space-y-2 bg-surface border border-primary/5 shadow-sm hover:shadow-md transition-shadow">
-              <Counter value={1500} suffix="+" className="text-3xl sm:text-4xl font-extrabold text-accent font-mono" />
-              <p className="text-[10px] sm:text-xs text-muted uppercase font-mono tracking-wider font-medium">Students Helped</p>
+              <Counter value={sec03Val2} suffix="+" className="text-3xl sm:text-4xl font-extrabold text-accent font-mono" />
+              <p className="text-[10px] sm:text-xs text-muted uppercase font-mono tracking-wider font-medium">{sec03Lbl2}</p>
             </Card>
             <Card className="flex flex-col justify-center p-6 text-center space-y-2 bg-surface border border-primary/5 shadow-sm hover:shadow-md transition-shadow">
-              <Counter value={4} suffix="+" className="text-3xl sm:text-4xl font-extrabold text-accent font-mono" />
-              <p className="text-[10px] sm:text-xs text-muted uppercase font-mono tracking-wider font-medium">Years Learning</p>
+              <Counter value={sec03Val3} suffix="+" className="text-3xl sm:text-4xl font-extrabold text-accent font-mono" />
+              <p className="text-[10px] sm:text-xs text-muted uppercase font-mono tracking-wider font-medium">{sec03Lbl3}</p>
             </Card>
             <Card className="flex flex-col justify-center p-6 text-center space-y-2 bg-surface border border-primary/5 shadow-sm hover:shadow-md transition-shadow">
-              <Counter value={10} suffix="+" className="text-3xl sm:text-4xl font-extrabold text-accent font-mono" />
-              <p className="text-[10px] sm:text-xs text-muted uppercase font-mono tracking-wider font-medium">Technologies</p>
+              <Counter value={sec03Val4} suffix="+" className="text-3xl sm:text-4xl font-extrabold text-accent font-mono" />
+              <p className="text-[10px] sm:text-xs text-muted uppercase font-mono tracking-wider font-medium">{sec03Lbl4}</p>
             </Card>
           </div>
         </div>
@@ -714,9 +813,9 @@ const Home: React.FC = () => {
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-accent font-mono text-xs uppercase tracking-wider">
               <Code className="h-4 w-4" />
-              <span>02 / Capabilities</span>
+              <span>{sec02Title}</span>
             </div>
-            <h2 className="text-3xl font-extrabold text-text">Skills & Tooling Matrix</h2>
+            <h2 className="text-3xl font-extrabold text-text">{sec02Headline}</h2>
           </div>
           
           <div className="relative w-full md:w-80">
@@ -855,11 +954,11 @@ const Home: React.FC = () => {
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-accent font-mono text-xs uppercase tracking-wider">
               <Flag className="h-4 w-4" />
-              <span>04 / Software Catalog</span>
+              <span>{sec04Title}</span>
             </div>
-            <h2 className="text-3xl font-extrabold text-text">Featured Projects</h2>
+            <h2 className="text-3xl font-extrabold text-text">{sec04Headline}</h2>
             <p className="text-xs sm:text-sm text-muted max-w-xl">
-              A collection of software, AI tools, and educational platforms I've built to solve real problems.
+              {sec04Desc}
             </p>
           </div>
 
@@ -1041,11 +1140,11 @@ const Home: React.FC = () => {
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-accent font-mono text-xs uppercase tracking-wider">
               <Lock className="h-4 w-4" />
-              <span>05 / Operational Products</span>
+              <span>{sec05Title}</span>
             </div>
-            <h2 className="text-3xl font-extrabold text-text">Solutions</h2>
+            <h2 className="text-3xl font-extrabold text-text">{sec05Headline}</h2>
             <p className="text-xs sm:text-sm text-muted max-w-xl">
-              Building practical software that helps students, teachers, and developers work smarter.
+              {sec05Desc}
             </p>
           </div>
 
@@ -1146,11 +1245,11 @@ const Home: React.FC = () => {
         <div className="border-b border-primary/10 pb-4">
           <div className="flex items-center gap-2 text-accent font-mono text-xs uppercase tracking-wider">
             <Compass className="h-4 w-4" />
-            <span>06 / Developer Society Network</span>
+            <span>{sec06Title}</span>
           </div>
-          <h2 className="text-3xl font-extrabold text-text mt-1">Deep Code Community</h2>
+          <h2 className="text-3xl font-extrabold text-text mt-1">{sec06Headline}</h2>
           <p className="text-xs sm:text-sm text-muted max-w-xl">
-            Building a community where students create technology that solves real-world educational problems.
+            {sec06Desc}
           </p>
         </div>
 
@@ -1313,11 +1412,11 @@ const Home: React.FC = () => {
         <div className="border-b border-primary/10 pb-4">
           <div className="flex items-center gap-2 text-accent font-mono text-xs uppercase tracking-wider">
             <FileText className="h-4 w-4" />
-            <span>07 / Educational Resources Registry</span>
+            <span>{sec07Title}</span>
           </div>
-          <h2 className="text-3xl font-extrabold text-text mt-1">Knowledge Hub</h2>
+          <h2 className="text-3xl font-extrabold text-text mt-1">{sec07Headline}</h2>
           <p className="text-xs sm:text-sm text-muted max-w-xl">
-            Free notes, guides, cheat sheets, and learning resources created alongside my YouTube videos to help students learn faster.
+            {sec07Desc}
           </p>
         </div>
 
@@ -1504,11 +1603,11 @@ const Home: React.FC = () => {
         <div className="border-b border-primary/10 pb-4">
           <div className="flex items-center gap-2 text-accent font-mono text-xs uppercase tracking-wider">
             <MessageSquare className="h-4 w-4" />
-            <span>08 / Direct Inquiries Gateway</span>
+            <span>{sec08Title}</span>
           </div>
-          <h2 className="text-3xl font-extrabold text-text mt-1">Let's Build Something Meaningful</h2>
+          <h2 className="text-3xl font-extrabold text-text mt-1">{sec08Headline}</h2>
           <p className="text-xs sm:text-sm text-muted max-w-xl">
-            Whether you're a student, developer, educator, recruiter, or organization, I'd love to hear from you. Let's build something that creates real impact.
+            {sec08Desc}
           </p>
         </div>
 
