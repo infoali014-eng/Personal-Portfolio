@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Sun, Moon, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NAV_ITEMS } from '@/constants/navigation';
-import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
 import { settingsService } from '@/services/SettingsService';
 
 export const Navbar: React.FC = () => {
-  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [logoText, setLogoText] = useState('ALI.OS');
@@ -89,18 +87,6 @@ export const Navbar: React.FC = () => {
               </svg>
             </a>
 
-            {/* Divider */}
-            <span className="h-4 w-px bg-primary/10"></span>
-
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="rounded-full p-2 text-muted transition-colors duration-200 hover:bg-primary/5 hover:text-accent"
-              aria-label="Toggle Theme"
-            >
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </button>
-
             {/* Primary CTA Button */}
             <Button 
               variant="primary" 
@@ -114,13 +100,6 @@ export const Navbar: React.FC = () => {
 
           {/* Mobile Menu Icon */}
           <div className="flex lg:hidden items-center gap-4">
-            <button
-              onClick={toggleTheme}
-              className="rounded-full p-2 text-muted transition-colors duration-200 hover:bg-primary/5 hover:text-accent"
-              aria-label="Toggle Theme"
-            >
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </button>
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2 text-muted hover:text-accent focus:outline-none"
