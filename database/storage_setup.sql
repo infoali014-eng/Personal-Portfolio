@@ -1,9 +1,6 @@
 -- Supabase Storage Setup for Portfolio Notes Uploads
 -- Run this script in the SQL Editor of your Supabase Dashboard to create the bucket and set up policies.
 
--- 1. Enable Row Level Security on storage.objects (if not already enabled)
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
-
 -- 2. Create the learning-resources-pdfs bucket
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
