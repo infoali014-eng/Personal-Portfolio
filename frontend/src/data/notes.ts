@@ -11,6 +11,7 @@ export interface NoteData {
   youtubeUrl?: string;
   youtubeTitle?: string;
   learningPath?: string;
+  fileUrl?: string;
   tags: string[];
 }
 

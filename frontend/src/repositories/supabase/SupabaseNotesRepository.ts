@@ -11,7 +11,7 @@ export class SupabaseNotesRepository implements BaseRepository<NoteData> {
         .from('categories')
         .select('id')
         .eq('name', name)
-        .eq('type', 'note')
+        .eq('type', 'notes')
         .maybeSingle();
 
       if (existing) {
@@ -20,14 +20,14 @@ export class SupabaseNotesRepository implements BaseRepository<NoteData> {
 
       const { data: newCat, error } = await (supabase as any)
         .from('categories')
-        .insert({ name, type: 'note' })
+        .insert({ name, type: 'notes' })
         .select('id')
         .single();
 
       if (error) throw error;
       return newCat.id;
     } catch (err) {
-      console.error('Error resolving category for note:', err);
+      console.error('Error resolving category for notes:', err);
       return null;
     }
   }
@@ -73,6 +73,7 @@ export class SupabaseNotesRepository implements BaseRepository<NoteData> {
         reading_time: item.readingTime,
         youtube_url: item.youtubeUrl,
         youtube_title: item.youtubeTitle,
+        file_url: item.fileUrl,
         category_id: categoryId
       })
       .select('*, categories(name)')
@@ -98,7 +99,8 @@ export class SupabaseNotesRepository implements BaseRepository<NoteData> {
       file_type: item.fileType,
       reading_time: item.readingTime,
       youtube_url: item.youtubeUrl,
-      youtube_title: item.youtubeTitle
+      youtube_title: item.youtubeTitle,
+      file_url: item.fileUrl
     };
 
     if (categoryId !== undefined) {
@@ -145,6 +147,7 @@ export class SupabaseNotesRepository implements BaseRepository<NoteData> {
       lastUpdated: row.updated_at ? row.updated_at.split('T')[0] : '',
       youtubeUrl: row.youtube_url || '',
       youtubeTitle: row.youtube_title || '',
+      fileUrl: row.file_url || '',
       tags: []
     };
   }

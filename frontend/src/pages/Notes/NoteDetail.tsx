@@ -93,9 +93,17 @@ const NoteDetail: React.FC = () => {
 
           {/* Action buttons */}
           <div className="flex flex-wrap gap-4 pt-4">
-            <Button variant="primary">
-              <Download className="mr-2 h-4 w-4" /> Download {note.fileType} Resource
-            </Button>
+            {note.fileUrl ? (
+              <a href={note.fileUrl} target="_blank" rel="noopener noreferrer" download>
+                <Button variant="primary">
+                  <Download className="mr-2 h-4 w-4" /> Download {note.fileType} Resource
+                </Button>
+              </a>
+            ) : (
+              <Button variant="primary" onClick={() => alert('No download file attached to this resource.')}>
+                <Download className="mr-2 h-4 w-4" /> Download {note.fileType} Resource
+              </Button>
+            )}
             {note.youtubeUrl && (
               <a href={note.youtubeUrl} target="_blank" rel="noopener noreferrer">
                 <Button variant="outline">
