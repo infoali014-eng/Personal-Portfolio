@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Compass, 
@@ -12,15 +12,35 @@ import {
 import { HelmetSEO } from '@/components/seo/HelmetSEO';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { PageLoader } from '@/components/ui/PageLoader';
 import { DEEPCODE_DATA } from '@/data/deepCode';
+import { useChapters } from '@/hooks/useChapters';
+import { deepCodeService } from '@/services/DeepCodeService';
 
 type SectionType = 'mission' | 'chapters' | 'contributors' | 'events' | 'roadmap';
 
 const DeepCode: React.FC = () => {
   const { section = 'mission' } = useParams<{ section?: string }>();
   const navigate = useNavigate();
-
   const activeSection = section as SectionType;
+
+  const { data: chapters, loading: loadingChapters } = useChapters();
+  const [mission, setMission] = useState(DEEPCODE_DATA.mission);
+  const [loadingMission, setLoadingMission] = useState(true);
+
+  useEffect(() => {
+    const fetchMission = async () => {
+      try {
+        const text = await deepCodeService.getMission();
+        setMission(text);
+      } catch (err) {
+        console.error('Error fetching mission statement:', err);
+      } finally {
+        setLoadingMission(false);
+      }
+    };
+    fetchMission();
+  }, []);
 
   const menuItems = [
     { id: 'mission', label: 'Mission & Vision', icon: <Flag className="h-4 w-4" /> },
@@ -29,6 +49,10 @@ const DeepCode: React.FC = () => {
     { id: 'events', label: 'Events & Workshops', icon: <Calendar className="h-4 w-4" /> },
     { id: 'roadmap', label: 'Growth Roadmap', icon: <Map className="h-4 w-4" /> }
   ];
+
+  if (loadingChapters && loadingMission) {
+    return <PageLoader />;
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 md:py-16 space-y-8">
@@ -82,7 +106,7 @@ const DeepCode: React.FC = () => {
                   <Flag className="h-5 w-5" /> Our Mission statement
                 </h3>
                 <p className="text-sm sm:text-base text-muted leading-relaxed">
-                  {DEEPCODE_DATA.mission}
+                  {mission}
                 </p>
               </Card>
 
@@ -108,7 +132,7 @@ const DeepCode: React.FC = () => {
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {DEEPCODE_DATA.chapters.map((chap, idx) => (
+                {chapters.map((chap, idx) => (
                   <Card key={idx} className="bg-surface border border-primary/5 p-6 space-y-4 flex flex-col justify-between">
                     <div className="space-y-2">
                       <div className="flex justify-between items-start">

@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useProjects } from '@/hooks/useProjects';
 import { useSolutions } from '@/hooks/useSolutions';
 import { useNotes } from '@/hooks/useNotes';
+import { messagesService } from '@/services/MessagesService';
+import { settingsService } from '@/services/SettingsService';
 import { 
   ArrowRight, 
   Download, 
@@ -422,6 +424,31 @@ const Home: React.FC = () => {
   // FAQ Accordion State
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
 
+  // Newsletter subscription states
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  // Hero Section Dynamic States
+  const [heroHeadline, setHeroHeadline] = useState('Building tools that solve real problems — one line of code at a time.');
+  const [heroSubtitle, setHeroSubtitle] = useState('CS Student @ University | Founder of Deep Code');
+  const [heroDescription, setHeroDescription] = useState("I'm a software developer focused on designing full-stack systems, automated learning tools, and coordinating open campus developer networks.");
+
+  React.useEffect(() => {
+    const fetchHero = async () => {
+      try {
+        const headline = await settingsService.getSetting('heroHeadline', 'Building tools that solve real problems — one line of code at a time.');
+        const sub = await settingsService.getSetting('heroSubtitle', 'CS Student @ University | Founder of Deep Code');
+        const desc = await settingsService.getSetting('heroDescription', "I'm a software developer focused on designing full-stack systems, automated learning tools, and coordinating open campus developer networks.");
+        setHeroHeadline(headline);
+        setHeroSubtitle(sub);
+        setHeroDescription(desc);
+      } catch (err) {
+        console.error('Error fetching hero settings:', err);
+      }
+    };
+    fetchHero();
+  }, []);
+
   const filteredSkills = SKILLS_DATA.filter((skill) => {
     const matchesSearch = skill.name.toLowerCase().includes(skillSearch.toLowerCase());
     const matchesTab = activeSkillTab === 'all' || skill.category === activeSkillTab;
@@ -453,21 +480,46 @@ const Home: React.FC = () => {
   const popularNotes = [...notesToUse].sort((a, b) => b.downloads - a.downloads).slice(0, 3);
 
   // Form submission handler
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !message) {
       setFormStatus('error');
       return;
     }
     setFormStatus('loading');
-    setTimeout(() => {
+    try {
+      await messagesService.createMessage({
+        name,
+        email,
+        subject: subject || '',
+        category,
+        message
+      });
       setFormStatus('success');
       setName('');
       setEmail('');
       setSubject('');
       setCategory('general');
       setMessage('');
-    }, 1500);
+    } catch (err) {
+      console.error('Error submitting form:', err);
+      setFormStatus('error');
+    }
+  };
+
+  // Newsletter submission handler
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+    setNewsletterStatus('loading');
+    try {
+      await messagesService.subscribeNewsletter(newsletterEmail);
+      setNewsletterStatus('success');
+      setNewsletterEmail('');
+    } catch (err) {
+      console.error('Error subscribing to newsletter:', err);
+      setNewsletterStatus('error');
+    }
   };
 
   return (
@@ -497,16 +549,14 @@ const Home: React.FC = () => {
                 <span className="text-muted">Available for new projects</span>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-text leading-[1.1] -letter-spacing-[0.04em]">
-                Building tools that <span className="text-accent">solve real problems</span> — one line of code at a time.
-              </h1>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-text leading-[1.1] -letter-spacing-[0.04em]" dangerouslySetInnerHTML={{ __html: heroHeadline }} />
 
               <div className="space-y-3">
                 <p className="text-sm font-bold font-mono text-accent uppercase tracking-wider">
-                  CS Student @ University | Founder of Deep Code
+                  {heroSubtitle}
                 </p>
                 <p className="text-base sm:text-lg text-muted max-w-xl leading-relaxed">
-                  I'm a software developer focused on designing full-stack systems, automated learning tools, and coordinating open campus developer networks.
+                  {heroDescription}
                 </p>
               </div>
 
@@ -1418,16 +1468,25 @@ const Home: React.FC = () => {
                 </p>
               </div>
 
-              <div className="space-y-2 relative z-10 pt-2">
+              <form onSubmit={handleNewsletterSubmit} className="space-y-2 relative z-10 pt-2">
                 <input 
                   type="email" 
                   placeholder="Enter email address" 
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  required
                   className="w-full rounded-lg bg-surface border border-primary/10 px-3 py-2 text-xs text-text placeholder-muted focus:border-accent focus:outline-none"
                 />
-                <Button variant="primary" className="w-full text-xs py-2">
-                  Subscribe to Hub
+                <Button variant="primary" type="submit" className="w-full text-xs py-2" disabled={newsletterStatus === 'loading'}>
+                  {newsletterStatus === 'loading' ? 'Subscribing...' : 'Subscribe to Hub'}
                 </Button>
-              </div>
+                {newsletterStatus === 'success' && (
+                  <p className="text-[10px] font-mono text-success mt-1">Successfully subscribed!</p>
+                )}
+                {newsletterStatus === 'error' && (
+                  <p className="text-[10px] font-mono text-rose-500 mt-1">Subscription failed. Try again.</p>
+                )}
+              </form>
             </Card>
           </div>
         </div>

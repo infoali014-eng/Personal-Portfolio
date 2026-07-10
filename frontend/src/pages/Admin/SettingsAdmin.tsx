@@ -17,6 +17,11 @@ const SettingsAdmin: React.FC = () => {
 
   // Brand details
   const [logoText, setLogoText] = useState('');
+
+  // Hero Section Settings
+  const [heroHeadline, setHeroHeadline] = useState('');
+  const [heroSubtitle, setHeroSubtitle] = useState('');
+  const [heroDescription, setHeroDescription] = useState('');
   
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -27,10 +32,14 @@ const SettingsAdmin: React.FC = () => {
       try {
         const logo = await settingsService.getSetting('logoText', 'ALI.OS');
         const title = await settingsService.getSetting('siteTitle', 'Ali | CS Student & AI Builder');
-        const desc = await settingsService.getSetting('siteDescription', 'Portfolio OS - Founder of Deep Code...');
+        const desc = await settingsService.getSetting('siteDescription', 'Portfolio OS - CS Student, Software Developer, and Founder of Deep Code.');
         const git = await settingsService.getSetting('github', 'https://github.com');
         const link = await settingsService.getSetting('linkedin', 'https://linkedin.com');
         const yt = await settingsService.getSetting('youtube', 'https://youtube.com');
+
+        const headline = await settingsService.getSetting('heroHeadline', 'Building tools that solve real problems — one line of code at a time.');
+        const sub = await settingsService.getSetting('heroSubtitle', 'CS Student @ University | Founder of Deep Code');
+        const heroDesc = await settingsService.getSetting('heroDescription', "I'm a software developer focused on designing full-stack systems, automated learning tools, and coordinating open campus developer networks.");
 
         setLogoText(logo);
         setSiteTitle(title);
@@ -38,6 +47,9 @@ const SettingsAdmin: React.FC = () => {
         setGithub(git);
         setLinkedin(link);
         setYoutube(yt);
+        setHeroHeadline(headline);
+        setHeroSubtitle(sub);
+        setHeroDescription(heroDesc);
       } catch (err) {
         console.error(err);
       } finally {
@@ -56,6 +68,9 @@ const SettingsAdmin: React.FC = () => {
       await settingsService.setSetting('github', github);
       await settingsService.setSetting('linkedin', linkedin);
       await settingsService.setSetting('youtube', youtube);
+      await settingsService.setSetting('heroHeadline', heroHeadline);
+      await settingsService.setSetting('heroSubtitle', heroSubtitle);
+      await settingsService.setSetting('heroDescription', heroDescription);
 
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2000);
@@ -112,7 +127,44 @@ const SettingsAdmin: React.FC = () => {
             </div>
           </Card>
 
-          {/* Global SEODefaults */}
+          {/* Hero Section Configs */}
+          <Card className="bg-surface border border-primary/5 p-6 space-y-4 shadow-sm">
+            <h3 className="font-bold text-text text-sm border-b border-primary/5 pb-2">Hero Section Brand Profile</h3>
+            
+            <div className="space-y-4 text-xs sm:text-sm">
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Hero Headline Text</label>
+                <input 
+                  type="text" 
+                  value={heroHeadline} 
+                  onChange={(e) => setHeroHeadline(e.target.value)} 
+                  className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Hero Subtitle</label>
+                <input 
+                  type="text" 
+                  value={heroSubtitle} 
+                  onChange={(e) => setHeroSubtitle(e.target.value)} 
+                  className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono uppercase text-muted tracking-wider">Hero Bio Description</label>
+                <textarea 
+                  value={heroDescription} 
+                  onChange={(e) => setHeroDescription(e.target.value)} 
+                  rows={3}
+                  className="w-full rounded-lg bg-background border border-primary/10 px-3 py-2 focus:outline-none"
+                />
+              </div>
+            </div>
+          </Card>
+
+          {/* Global SEO Defaults */}
           <Card className="bg-surface border border-primary/5 p-6 space-y-4 shadow-sm">
             <h3 className="font-bold text-text text-sm border-b border-primary/5 pb-2">SEO Configurations</h3>
             

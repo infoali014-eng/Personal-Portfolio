@@ -88,12 +88,41 @@ export class SupabaseMessagesRepository {
     if (error) {
       throw new AppError(error.message, 'REPOSITORY_ERROR');
     }
-
     return {
       id: data.id,
       email: data.email,
       subscribedAt: data.subscribed_at
     };
+  }
+
+  async findAllSubscribers(): Promise<Subscriber[]> {
+    const { data, error } = await (supabase as any)
+      .from('newsletter_subscribers')
+      .select('*')
+      .order('subscribed_at', { ascending: false });
+
+    if (error) {
+      throw new AppError(error.message, 'NETWORK_ERROR');
+    }
+
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      email: row.email,
+      subscribedAt: row.subscribed_at
+    }));
+  }
+
+  async deleteSubscriber(id: string): Promise<boolean> {
+    const { error } = await (supabase as any)
+      .from('newsletter_subscribers')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw new AppError(error.message, 'REPOSITORY_ERROR');
+    }
+
+    return true;
   }
 
   private mapToDomain(row: any): ContactMessage {

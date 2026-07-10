@@ -12,15 +12,21 @@ export const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [logoText, setLogoText] = useState('ALI.OS');
+  const [github, setGithub] = useState('https://github.com');
+  const [linkedin, setLinkedin] = useState('https://linkedin.com');
 
   useEffect(() => {
-    const fetchLogo = async () => {
+    const fetchSettings = async () => {
       try {
-        const text = await settingsService.getSetting('logoText', 'ALI.OS');
-        setLogoText(text);
+        const logo = await settingsService.getSetting('logoText', 'ALI.OS');
+        setLogoText(logo);
+        const git = await settingsService.getSetting('github', 'https://github.com');
+        setGithub(git);
+        const link = await settingsService.getSetting('linkedin', 'https://linkedin.com');
+        setLinkedin(link);
       } catch {}
     };
-    fetchLogo();
+    fetchSettings();
   }, []);
 
   return (
@@ -58,7 +64,7 @@ export const Navbar: React.FC = () => {
           <div className="hidden lg:flex items-center gap-4">
             {/* Socials - inline SVGs */}
             <a
-              href="https://github.com"
+              href={github}
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted transition-colors duration-200 hover:text-accent"
@@ -70,7 +76,7 @@ export const Navbar: React.FC = () => {
               </svg>
             </a>
             <a
-              href="https://linkedin.com"
+              href={linkedin}
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted transition-colors duration-200 hover:text-accent"
@@ -155,7 +161,7 @@ export const Navbar: React.FC = () => {
               <div className="border-t border-primary/5 pt-4 flex items-center justify-between">
                 <div className="flex gap-4">
                   <a
-                    href="https://github.com"
+                    href={github}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted hover:text-accent"
@@ -167,7 +173,7 @@ export const Navbar: React.FC = () => {
                     </svg>
                   </a>
                   <a
-                    href="https://linkedin.com"
+                    href={linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted hover:text-accent"

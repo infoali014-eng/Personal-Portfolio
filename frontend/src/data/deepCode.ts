@@ -1,4 +1,5 @@
 export interface DeepCodeChapter {
+  id?: string;
   name: string;
   university: string;
   lead: string;
