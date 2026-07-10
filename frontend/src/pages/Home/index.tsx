@@ -138,23 +138,18 @@ interface FAQItem {
 }
 
 const SKILLS_DATA: SkillItem[] = [
-  { name: 'TypeScript', category: 'languages', icon: <Code className="h-5 w-5 text-accent" />, level: 'Advanced' },
-  { name: 'JavaScript', category: 'languages', icon: <Code className="h-5 w-5 text-accent" />, level: 'Advanced' },
-  { name: 'Python', category: 'languages', icon: <Code className="h-5 w-5 text-accent" />, level: 'Intermediate' },
-  { name: 'React', category: 'frontend', icon: <Layers className="h-5 w-5 text-accent" />, level: 'Advanced' },
-  { name: 'Tailwind CSS', category: 'frontend', icon: <Layers className="h-5 w-5 text-accent" />, level: 'Advanced' },
-  { name: 'Framer Motion', category: 'frontend', icon: <Layers className="h-5 w-5 text-accent" />, level: 'Intermediate' },
-  { name: 'Node.js', category: 'backend', icon: <Server className="h-5 w-5 text-accent" />, level: 'Advanced' },
-  { name: 'Express', category: 'backend', icon: <Server className="h-5 w-5 text-accent" />, level: 'Advanced' },
-  { name: 'REST APIs', category: 'backend', icon: <Server className="h-5 w-5 text-accent" />, level: 'Advanced' },
-  { name: 'AI APIs (OpenAI)', category: 'ai', icon: <Cpu className="h-5 w-5 text-accent" />, level: 'Intermediate' },
-  { name: 'Langchain', category: 'ai', icon: <Cpu className="h-5 w-5 text-accent" />, level: 'Intermediate' },
-  { name: 'PostgreSQL', category: 'databases', icon: <Database className="h-5 w-5 text-accent" />, level: 'Intermediate' },
-  { name: 'Supabase DB', category: 'databases', icon: <Database className="h-5 w-5 text-accent" />, level: 'Intermediate' },
-  { name: 'Redis', category: 'databases', icon: <Database className="h-5 w-5 text-accent" />, level: 'Basic' },
-  { name: 'Git', category: 'tools', icon: <Award className="h-5 w-5 text-accent" />, level: 'Advanced' },
-  { name: 'GitHub', category: 'tools', icon: <Award className="h-5 w-5 text-accent" />, level: 'Advanced' },
-  { name: 'Vercel', category: 'tools', icon: <Award className="h-5 w-5 text-accent" />, level: 'Advanced' },
+  { name: 'C++', category: 'languages', icon: <Code className="h-5 w-5 text-accent" />, level: '' },
+  { name: 'C#', category: 'languages', icon: <Code className="h-5 w-5 text-accent" />, level: '' },
+  { name: 'Object-Oriented Programming', category: 'languages', icon: <Code className="h-5 w-5 text-accent" />, level: '' },
+  { name: 'AI API Integration', category: 'ai', icon: <Cpu className="h-5 w-5 text-accent" />, level: '' },
+  { name: 'Oracle Database', category: 'databases', icon: <Database className="h-5 w-5 text-accent" />, level: '' },
+  { name: 'PostgreSQL', category: 'databases', icon: <Database className="h-5 w-5 text-accent" />, level: '' },
+  { name: 'Supabase', category: 'databases', icon: <Database className="h-5 w-5 text-accent" />, level: '' },
+  { name: 'Streamlit', category: 'tools', icon: <Award className="h-5 w-5 text-accent" />, level: '' },
+  { name: 'Vercel', category: 'tools', icon: <Award className="h-5 w-5 text-accent" />, level: '' },
+  { name: 'Git', category: 'tools', icon: <Award className="h-5 w-5 text-accent" />, level: '' },
+  { name: 'GitHub', category: 'tools', icon: <Award className="h-5 w-5 text-accent" />, level: '' },
+  { name: 'Windows Forms Development', category: 'frontend', icon: <Layers className="h-5 w-5 text-accent" />, level: '' },
 ];
 
 
@@ -278,60 +273,7 @@ const DEEPCODE_ROADMAP: CommunityMilestone[] = [
   { title: 'Annual Tech Hackathon', description: 'Structure code challenges solving campus problems.', icon: <Award className="h-4 w-4" /> }
 ];
 
-const NOTES_DATA: NoteResourceItem[] = [
-  {
-    slug: 'advanced-typescript-notes',
-    title: 'Advanced TypeScript Notes',
-    category: 'Programming',
-    description: 'Comprehensive reference manual mapping type-level utility operations and conditional inferences.',
-    difficulty: 'Advanced',
-    fileType: 'PDF',
-    readingTime: '45 min',
-    downloads: 1420,
-    lastUpdated: '2026-07-01',
-    youtubeUrl: 'https://youtube.com',
-    youtubeTitle: 'Advanced TS Video Guide',
-    isFeatured: true
-  },
-  {
-    slug: 'supabase-auth-storage',
-    title: 'Supabase Auth & Storage Architectures',
-    category: 'Database',
-    description: 'Step-by-step schematics structuring policy rules and transactional tokens.',
-    difficulty: 'Intermediate',
-    fileType: 'ZIP',
-    readingTime: '30 min',
-    downloads: 890,
-    lastUpdated: '2026-06-15',
-    youtubeUrl: 'https://youtube.com',
-    youtubeTitle: 'Supabase Video Hack',
-    isFeatured: false
-  },
-  {
-    slug: 'operating-systems-kernels',
-    title: 'Operating Systems Kernels Guides',
-    category: 'Operating Systems',
-    description: 'Virtual memory allocation checks, thread lock mutex loops, and scheduler parameters.',
-    difficulty: 'Advanced',
-    fileType: 'PDF',
-    readingTime: '60 min',
-    downloads: 1100,
-    lastUpdated: '2026-05-10',
-    isFeatured: false
-  },
-  {
-    slug: 'dsa-cheat-sheet',
-    title: 'DSA Cheat Sheet',
-    category: 'DSA',
-    description: 'Quick reference cards covering binary heaps, tree traversals, and dynamic program grids.',
-    difficulty: 'Intermediate',
-    fileType: 'PDF',
-    readingTime: '15 min',
-    downloads: 2100,
-    lastUpdated: '2026-07-08',
-    isFeatured: false
-  }
-];
+const NOTES_DATA: NoteResourceItem[] = [];
 
 const COLLABS_DATA: CollabCardItem[] = [
   { title: 'Software Projects', description: 'Designing production-grade full-stack apps and AI wrappers.', icon: <Code className="h-5 w-5 text-accent" />, categoryValue: 'projects' },
